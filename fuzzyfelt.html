@@ -76,10 +76,10 @@ var context2d = canvas.getContext('2d');
 context2d.font = 'bold 18px sans-serif';
 for(var i=0; i<4; i++) {
 	text = 'Four Fiver Twelve!'
-	w=80
-	h=60
-	x = 10
-	y = 10+i*(h+4)
+	w=150
+	h=70
+	x=10
+	y=10+i*(h+8)
 	boxColour = 'rgba('+(255-i*80)+','+(128+i*40)+','+i*80+',0.33)';
 	drawFuzzyFeltElement(context2d,text, x, y, w, h, boxColour)
 };
@@ -92,6 +92,7 @@ function drawFuzzyFeltElement(ctx,text, x, y, w, h, boxColour) {
 	ctx.fillStyle = boxColour;
 	ctx.strokeStyle = 'rgba(0,0,0,1.0)';
 	ctx.fillRectR(x, y, w, h, 20);
+	ctx.lineWidth = 4.0
 	ctx.strokeRectR(x, y, w, h, 20);
 
 	ctx.shadowOffsetX = 3;
@@ -101,9 +102,9 @@ function drawFuzzyFeltElement(ctx,text, x, y, w, h, boxColour) {
 	ctx.fillStyle    = '#000';
 	ctx.textAlign = 'center';
 	ctx.textBaseline = 'middle';
-	linesArray = getLines(ctx, text, w-10)
-	numLines = linesArray.length
 	pxHeight = 18
+	linesArray = getLines(ctx, text, w-15)
+	numLines = linesArray.length
 	textx = x+w/2
 	texty = y+h/2-(((numLines-1)/2)*pxHeight)
 	for (var i=0; i < numLines; i++) {
