@@ -43,26 +43,26 @@ Object.getPrototypeOf(document.createElement('canvas').getContext('2d')).strokeR
 	this.stroke();
 };
 </script>
-<canvas id="canvas_final" width=600 height=400 style="width:380;height:240;" />
+<canvas id="canvas_final" width=2000 height=600 style="width:380;height:240;" />
 <script type="text/javascript">
 
 function getLines(ctx,phrase,maxPxLength) {
 	//break the text area text into lines based on "box" width
 	var wa=phrase.split(" "),
-			phraseArray=[],
-			lastPhrase="",
+			phraseArray = [],
+			lastPhrase = "",
 			l=maxPxLength,
-			measure=0;
-	for (var i=0;i<wa.length;i++) {
-		var w=wa[i];
-		measure=ctx.measureText(lastPhrase+w).width;
-		if (measure<l) {
-			lastPhrase+=(" "+w);
+			measure = 0;
+	for (var i = 0;i < wa.length; i++) {
+		var w= wa[i];
+		measure = ctx.measureText(lastPhrase+w).width;
+		if (measure < l) {
+			lastPhrase += (" "+w);
 		}else {
 			phraseArray.push(lastPhrase);
-			lastPhrase=w;
+			lastPhrase = w;
 		}
-		if (i===wa.length-1) {
+		if (i === wa.length-1) {
 			phraseArray.push(lastPhrase);
 			break;
 		}
@@ -70,18 +70,95 @@ function getLines(ctx,phrase,maxPxLength) {
 	return phraseArray;
 }
 
-var canvas = document.getElementById("canvas_final");
-var context2d = canvas.getContext('2d');
+function drawColumnLine(ctx, x, y, h) {
+	ctx.strokeStyle = 'rgba(0,0,0,1.0)';
+	ctx.lineWidth = 4.0
+	ctx.beginPath();
+	ctx.moveTo(x, y);
+	ctx.lineTo(x, y+h);
+	ctx.closePath();
+	ctx.stroke();
+}
 
-context2d.font = 'bold 18px sans-serif';
-for(var i=0; i<4; i++) {
-	text = 'Four Fiver Twelve!'
-	w=150
-	h=70
-	x=10
-	y=10+i*(h+8)
-	boxColour = 'rgba('+(255-i*80)+','+(128+i*40)+','+i*80+',0.33)';
-	drawFuzzyFeltElement(context2d,text, x, y, w, h, boxColour)
+function drawRowLine(ctx, x, y, w) {
+	ctx.strokeStyle = 'rgba(0,0,0,1.0)';
+	ctx.lineWidth = 4.0
+	ctx.beginPath();
+	ctx.moveTo(x, y);
+	ctx.lineTo(x+w, y);
+	ctx.closePath();
+	ctx.stroke();
+};
+
+function drawGrid(ctx, cellWidth, cellHeight, numRows, numCols, weekX) {
+	var w = cellWidth*numCols + weekX
+	var h = cellHeight*numRows
+
+	// Draw the column lines
+	var x0 = 0
+	var y0 = 0
+	drawColumnLine(context2d, x0, y0, h)
+	x0 = weekX
+	for(var i = 0; i < numCols; i++) {
+		drawColumnLine(ctx, x0, y0, h)
+		x0 += cellWidth
+	};
+	drawColumnLine(ctx, x0, y0, h)
+
+	// Draw the row lines
+	x0 = 0
+	y0 = 0
+	drawRowLine(ctx, x0, cellHeight/2, w)
+	for(var i = 0; i < numRows; i++) {
+		drawRowLine(ctx, x0, y0, w)
+		y0 += cellHeight
+	};
+	drawRowLine(ctx, x0, y0, w)
+};
+
+function drawTitle(ctx, title, n, titleX, titleY, titleWidth, titleHeight, bgColour) {
+	var x0 = titleX + n*titleWidth
+	var y0 = titleY
+
+	ctx.shadowOffsetX = 0;
+	ctx.shadowOffsetY = 0;
+	ctx.shadowBlur = 0;
+	ctx.fillStyle = bgColour
+	ctx.lineWidth = 0.0;
+	ctx.fillRect(x0, y0, titleWidth, titleHeight);
+
+	var xc = x0 + titleWidth/2
+	var yc = y0 + titleHeight/2
+	ctx.shadowOffsetX = 0;
+	ctx.shadowOffsetY = 0;
+	ctx.shadowBlur = 0;
+	ctx.textAlign = 'center';
+	ctx.textBaseline = 'middle';
+	ctx.strokeStyle = 'rgba(0,0,0,1.0)';
+	ctx.lineWidth  = 4.0;
+	ctx.fillStyle = '#000';
+	ctx.fillText(title, xc, yc);
+};
+
+function drawName(ctx, name, n, nameX, nameY, nameWidth, nameHeight, bgColour) {
+	var x0 = nameX
+	var y0 = nameY + n*nameHeight
+
+	ctx.shadowOffsetX = 0;
+	ctx.shadowOffsetY = 0;
+	ctx.shadowBlur = 0;
+	ctx.fillStyle = bgColour
+	ctx.lineWidth = 0.0;
+	ctx.fillRect(x0, y0, nameWidth, nameHeight);
+
+	var xc = x0 + nameWidth/2
+	var yc = y0 + nameHeight/2
+	ctx.textAlign = 'center';
+	ctx.textBaseline = 'middle';
+	ctx.strokeStyle = 'rgba(0,0,0,1.0)';
+	ctx.lineWidth  = 4.0;
+	ctx.fillStyle = '#000';
+	ctx.fillText(name, xc, yc);
 };
 
 function drawFuzzyFeltElement(ctx,text, x, y, w, h, boxColour) {
@@ -113,6 +190,115 @@ function drawFuzzyFeltElement(ctx,text, x, y, w, h, boxColour) {
 		texty += pxHeight
 	};
 };
+var canvas = document.getElementById("canvas_final");
+var context2d = canvas.getContext('2d');
+
+context2d.font = 'bold 18px sans-serif';
+
+const cellWidth=200
+const cellHeight=100
+const numWeeks=8
+const numPeople=6
+
+const numCols=numWeeks
+const numRows=numPeople+2
+
+const elementHeight=cellHeight-10
+
+const weekWidth=cellWidth
+const weekX=100
+const weekY=cellHeight
+
+const nameX=0
+const nameY=weekY
+const nameWidth=weekX
+const nameHeight=cellHeight
+
+const titleX=weekX
+const titleY=0
+const titleWidth=cellWidth
+const titleHeight=cellHeight/2
+
+var pastelColours=[]
+pastelColours.push("#FF4848")
+pastelColours.push("#06DCFB")
+pastelColours.push("#79FC4E")
+pastelColours.push("#DFE32D")
+pastelColours.push("#DDCEFF")
+pastelColours.push("#B4D1B6")
+
+var names=[]
+names.push('Jake T')
+names.push('Lee H')
+names.push('Alex W')
+names.push('Baldur K')
+names.push('Michael N')
+names.push('Paul H')
+
+var weeks=[]
+weeks.push('November')
+weeks.push('November')
+weeks.push('November')
+weeks.push('November')
+weeks.push('December')
+weeks.push('December')
+weeks.push('December')
+weeks.push('December')
+
+// Draw week titles
+var pastelColourIndex = 0
+var lastColourText = ''
+
+for(var w=0; w<numWeeks; w++) {
+	var title = weeks[w]
+	if (title != lastColourText) {
+		pastelColourIndex++
+		if (pastelColourIndex >= pastelColours.length) {
+			pastelColourIndex = 0
+		};
+		lastColourText = title
+	};
+	var titleBGcolour = pastelColours[pastelColourIndex]
+	drawTitle(context2d, title, w, titleX, titleY, titleWidth, titleHeight, titleBGcolour)
+};
+
+// Draw name titles
+pastelColourIndex = 0
+lastColourText = ''
+
+for(var n=0; n<numPeople; n++) {
+	var name = names[n]
+	if (name != lastColourText) {
+		pastelColourIndex++
+		if (pastelColourIndex >= pastelColours.length) {
+			pastelColourIndex = 0
+		};
+		lastColourText = name
+	};
+	var nameBGcolour = pastelColours[pastelColourIndex]
+	drawName(context2d, name, n, nameX, nameY, nameWidth, nameHeight, nameBGcolour)
+};
+
+drawGrid(context2d, cellWidth, cellHeight, numRows, numCols, weekX)
+
+// Draw the fuzzy felt elements
+for(var n = 0; n < numPeople; n++) {
+	var x0 = weekX
+	var y = weekY + n*cellHeight + (10/2)
+	drawName(context2d, n, nameX, nameY, nameWidth, nameHeight, names[n])
+	for(var i = 0; i < 4; i++) {
+		text = 'Four Fiver Twelve!'
+		var nw = i + 1
+		var w = nw*weekWidth - 10
+		var h = elementHeight
+		var x = x0
+		x+=(10/2)
+		var boxColour = 'rgba('+(255-i*80)+','+(128+i*40)+','+i*80+',1.00)';
+		drawFuzzyFeltElement(context2d,text, x, y, w, h, boxColour)
+		x0 += nw*cellWidth
+	};
+};
+
 
 </script>
 </div>
