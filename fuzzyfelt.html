@@ -245,6 +245,32 @@ weeks.push('December')
 weeks.push('December')
 weeks.push('December')
 
+function TaskItem(owner, title, duration) {
+	this.m_owner = owner
+	this.m_title = title
+	this.m_duration = duration
+};
+
+var tasks=[
+	new TaskItem("Jake T", "Task Number 1", 1),
+	new TaskItem("Jake T", "Task Number 2", 3),
+	new TaskItem("Jake T", "Task Number 3", 2),
+	new TaskItem("Lee H", "Lee Task 1", 2),
+	new TaskItem("Lee H", "Lee Task 2", 1),
+	new TaskItem("Alex W", "Alex Task 1", 3),
+	new TaskItem("Alex W", "Alex Task 2", 1),
+	new TaskItem("Alex W", "Alex Task 3", 2),
+	new TaskItem("Baldur K", "Baldur Task 1", 2),
+	new TaskItem("Baldur K", "Baldur Task 2", 2),
+	new TaskItem("Baldur K", "Baldur Task 3", 1),
+	new TaskItem("Michael N", "Mike Task 1", 1),
+	new TaskItem("Michael N", "Mike Task 2", 2),
+	new TaskItem("Michael N", "Mike Task 3", 1),
+	new TaskItem("Paul H", "Paul H Task 1", 2),
+	new TaskItem("Paul H", "Paul H Task 2", 1),
+	new TaskItem("Paul H", "Paul H Task 3", 2),
+];
+
 // Draw week titles
 var pastelColourIndex = 0
 var lastColourText = ''
@@ -285,17 +311,21 @@ drawGrid(context2d, cellWidth, cellHeight, numRows, numCols, weekX)
 for(var n = 0; n < numPeople; n++) {
 	var x0 = weekX
 	var y = weekY + n*cellHeight + (10/2)
-	drawName(context2d, n, nameX, nameY, nameWidth, nameHeight, names[n])
-	for(var i = 0; i < 4; i++) {
-		text = 'Four Fiver Twelve!'
-		var nw = i + 1
-		var w = nw*weekWidth - 10
-		var h = elementHeight
-		var x = x0
-		x+=(10/2)
-		var boxColour = 'rgba('+(255-i*80)+','+(128+i*40)+','+i*80+',1.00)';
-		drawFuzzyFeltElement(context2d,text, x, y, w, h, boxColour)
-		x0 += nw*cellWidth
+	name = names[n]
+	for(var i = 0; i < tasks.length; i++) {
+		var task = tasks[i]
+		if (task.m_owner == name) {
+			var text = task.m_title
+			var duration = task.m_duration
+			var nw = duration + 1
+			var w = nw*weekWidth - 10
+			var h = elementHeight
+			var x = x0
+			x+=(10/2)
+			var boxColour = 'rgba('+(255-i*80)+','+(128+i*40)+','+i*80+',1.00)';
+			drawFuzzyFeltElement(context2d,text, x, y, w, h, boxColour)
+			x0 += nw*cellWidth
+		};
 	};
 };
 
