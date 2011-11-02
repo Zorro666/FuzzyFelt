@@ -1,17 +1,16 @@
 High
-* generate html web page from python
 * embed the task data into the page as javascript object data
+* columns with dates
+* task boxes for each entry: colours based on risk or priority
+* add legend describing the box colours
+* make short term page
 
 Medium
-* columns with dates
-* rows with names
-* task boxes for each entry
+* generate html web page from python
 * take input list of tasks: sort, handle priority
-* make short term page
 * make future term page
 
 Low
 * take input list of tasks: handle parent
-* add legend describing the box colours
 * text wrap function - break on characters if a line is too long
 * interactivity support: filtering, change priority on a task and see the update
