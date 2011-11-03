@@ -7,9 +7,20 @@
 	</head>
 	<body>
 <div>
+<h1>Short Term Tasks</h1>
+<canvas id="canvas_short" width=2000 height=600 style="width:380;height:240;" />
+</div>
+<h1>Future Tasks</h1>
+<div>
+<canvas id="canvas_future" width=8000 height=600 style="width:380;height:240;" />
+</div>
+
 <script type="text/javascript">
-Object.getPrototypeOf(document.createElement('canvas').getContext('2d')).fillRectR = function(x,y,w,h,r) {
-	if (typeof r === "undefined") {
+
+Object.getPrototypeOf(document.createElement('canvas').getContext('2d')).fillRectR = function(x,y,w,h,r)
+{
+	if (typeof r === "undefined")
+	{
 		r = 5;
 	}
 	this.beginPath();
@@ -25,8 +36,11 @@ Object.getPrototypeOf(document.createElement('canvas').getContext('2d')).fillRec
 	this.closePath();
 	this.fill();
 };
-Object.getPrototypeOf(document.createElement('canvas').getContext('2d')).strokeRectR = function(x,y,w,h,r) {
-	if (typeof r === "undefined") {
+
+Object.getPrototypeOf(document.createElement('canvas').getContext('2d')).strokeRectR = function(x,y,w,h,r)
+{
+	if (typeof r === "undefined")
+	{
 		r = 5;
 	}
 	this.beginPath();
@@ -43,26 +57,46 @@ Object.getPrototypeOf(document.createElement('canvas').getContext('2d')).strokeR
 	this.stroke();
 };
 </script>
-<canvas id="canvas_final" width=2000 height=600 style="width:380;height:240;" />
 <script type="text/javascript">
 
-function getLines(ctx,phrase,maxPxLength) {
+function TaskItem(owner, title, duration)
+{
+	this.m_owner = owner;
+	this.m_title = title;
+	this.m_duration = duration;
+};
+
+function FuzzyViewData(cellWidth, cellHeight, weekX, weekY)
+{
+	this.m_cellWidth = cellWidth;
+	this.m_cellHeight = cellHeight;
+	this.m_weekX = weekX;
+	this.m_weekY = weekY;
+};
+
+function getLines(ctx,phrase,maxPxLength)
+{
 	//break the text area text into lines based on "box" width
-	var wa=phrase.split(" "),
-			phraseArray = [],
-			lastPhrase = "",
-			l=maxPxLength,
-			measure = 0;
-	for (var i = 0;i < wa.length; i++) {
+	var wa = phrase.split(" ");
+	var phraseArray = [];
+	var lastPhrase = "";
+	var l = maxPxLength;
+	var measure = 0;
+	for (var i = 0;i < wa.length; i++)
+	{
 		var w= wa[i];
 		measure = ctx.measureText(lastPhrase+w).width;
-		if (measure < l) {
+		if (measure < l)
+		{
 			lastPhrase += (" "+w);
-		}else {
+		}
+		else
+		{
 			phraseArray.push(lastPhrase);
 			lastPhrase = w;
 		}
-		if (i === wa.length-1) {
+		if (i === wa.length-1)
+		{
 			phraseArray.push(lastPhrase);
 			break;
 		}
@@ -70,7 +104,8 @@ function getLines(ctx,phrase,maxPxLength) {
 	return phraseArray;
 }
 
-function drawColumnLine(ctx, x, y, h) {
+function drawColumnLine(ctx, x, y, h)
+{
 	ctx.strokeStyle = 'rgba(0,0,0,1.0)';
 	ctx.lineWidth = 4.0
 	ctx.beginPath();
@@ -80,7 +115,8 @@ function drawColumnLine(ctx, x, y, h) {
 	ctx.stroke();
 }
 
-function drawRowLine(ctx, x, y, w) {
+function drawRowLine(ctx, x, y, w)
+{
 	ctx.strokeStyle = 'rgba(0,0,0,1.0)';
 	ctx.lineWidth = 4.0
 	ctx.beginPath();
@@ -90,45 +126,49 @@ function drawRowLine(ctx, x, y, w) {
 	ctx.stroke();
 };
 
-function drawGrid(ctx, cellWidth, cellHeight, numRows, numCols, weekX) {
-	var w = cellWidth*numCols + weekX
-	var h = cellHeight*numRows
+function drawGrid(ctx, cellWidth, cellHeight, numRows, numCols, weekX)
+{
+	var w = cellWidth*numCols + weekX;
+	var h = cellHeight*numRows;
 
 	// Draw the column lines
-	var x0 = 0
-	var y0 = 0
-	drawColumnLine(context2d, x0, y0, h)
-	x0 = weekX
-	for(var i = 0; i < numCols; i++) {
-		drawColumnLine(ctx, x0, y0, h)
-		x0 += cellWidth
+	var x0 = 0;
+	var y0 = 0;
+	drawColumnLine(ctx, x0, y0, h);
+	x0 = weekX;
+	for (var i = 0; i < numCols; i++)
+	{
+		drawColumnLine(ctx, x0, y0, h);
+		x0 += cellWidth;
 	};
-	drawColumnLine(ctx, x0, y0, h)
+	drawColumnLine(ctx, x0, y0, h);
 
 	// Draw the row lines
-	x0 = 0
-	y0 = 0
-	drawRowLine(ctx, x0, cellHeight/2, w)
-	for(var i = 0; i < numRows; i++) {
-		drawRowLine(ctx, x0, y0, w)
-		y0 += cellHeight
+	x0 = 0;
+	y0 = 0;
+	drawRowLine(ctx, x0, cellHeight/2, w);
+	for (var i = 0; i < numRows; i++)
+	{
+		drawRowLine(ctx, x0, y0, w);
+		y0 += cellHeight;
 	};
-	drawRowLine(ctx, x0, y0, w)
+	drawRowLine(ctx, x0, y0, w);
 };
 
-function drawTitle(ctx, title, n, titleX, titleY, titleWidth, titleHeight, bgColour) {
-	var x0 = titleX + n*titleWidth
-	var y0 = titleY
+function drawTitle(ctx, title, n, titleX, titleY, titleWidth, titleHeight, bgColour)
+{
+	var x0 = titleX + n*titleWidth;
+	var y0 = titleY;
 
 	ctx.shadowOffsetX = 0;
 	ctx.shadowOffsetY = 0;
 	ctx.shadowBlur = 0;
-	ctx.fillStyle = bgColour
+	ctx.fillStyle = bgColour;
 	ctx.lineWidth = 0.0;
 	ctx.fillRect(x0, y0, titleWidth, titleHeight);
 
-	var xc = x0 + titleWidth/2
-	var yc = y0 + titleHeight/2
+	var xc = x0 + titleWidth/2;
+	var yc = y0 + titleHeight/2;
 	ctx.shadowOffsetX = 0;
 	ctx.shadowOffsetY = 0;
 	ctx.shadowBlur = 0;
@@ -140,19 +180,20 @@ function drawTitle(ctx, title, n, titleX, titleY, titleWidth, titleHeight, bgCol
 	ctx.fillText(title, xc, yc);
 };
 
-function drawName(ctx, name, n, nameX, nameY, nameWidth, nameHeight, bgColour) {
-	var x0 = nameX
-	var y0 = nameY + n*nameHeight
+function drawName(ctx, name, n, nameX, nameY, nameWidth, nameHeight, bgColour)
+{
+	var x0 = nameX;
+	var y0 = nameY + n*nameHeight;
 
 	ctx.shadowOffsetX = 0;
 	ctx.shadowOffsetY = 0;
 	ctx.shadowBlur = 0;
-	ctx.fillStyle = bgColour
+	ctx.fillStyle = bgColour;
 	ctx.lineWidth = 0.0;
 	ctx.fillRect(x0, y0, nameWidth, nameHeight);
 
-	var xc = x0 + nameWidth/2
-	var yc = y0 + nameHeight/2
+	var xc = x0 + nameWidth/2;
+	var yc = y0 + nameHeight/2;
 	ctx.textAlign = 'center';
 	ctx.textBaseline = 'middle';
 	ctx.strokeStyle = 'rgba(0,0,0,1.0)';
@@ -161,7 +202,8 @@ function drawName(ctx, name, n, nameX, nameY, nameWidth, nameHeight, bgColour) {
 	ctx.fillText(name, xc, yc);
 };
 
-function drawFuzzyFeltElement(ctx,text, x, y, w, h, boxColour) {
+function drawFuzzyFeltElement(ctx,text, x, y, w, h, boxColour)
+{
 	ctx.shadowOffsetX = 0;
 	ctx.shadowOffsetY = 0;
 	ctx.shadowBlur    = 0;
@@ -169,7 +211,7 @@ function drawFuzzyFeltElement(ctx,text, x, y, w, h, boxColour) {
 	ctx.fillStyle = boxColour;
 	ctx.strokeStyle = 'rgba(0,0,0,1.0)';
 	ctx.fillRectR(x, y, w, h, 20);
-	ctx.lineWidth = 4.0
+	ctx.lineWidth = 4.0;
 	ctx.strokeRectR(x, y, w, h, 20);
 
 	ctx.shadowOffsetX = 3;
@@ -179,156 +221,215 @@ function drawFuzzyFeltElement(ctx,text, x, y, w, h, boxColour) {
 	ctx.fillStyle    = '#000';
 	ctx.textAlign = 'center';
 	ctx.textBaseline = 'middle';
-	pxHeight = 18
-	linesArray = getLines(ctx, text, w-15)
-	numLines = linesArray.length
-	textx = x+w/2
-	texty = y+h/2-(((numLines-1)/2)*pxHeight)
-	for (var i=0; i < numLines; i++) {
-		line = linesArray[i]
+	pxHeight = 18;
+	linesArray = getLines(ctx, text, w-15);
+	numLines = linesArray.length;
+	textx = x+w/2;
+	texty = y+h/2-(((numLines-1)/2)*pxHeight);
+	for (var i=0; i < numLines; i++)
+	{
+		line = linesArray[i];
 		ctx.fillText(line, textx, texty);
-		texty += pxHeight
+		texty += pxHeight;
 	};
 };
-var canvas = document.getElementById("canvas_final");
-var context2d = canvas.getContext('2d');
 
-context2d.font = 'bold 18px sans-serif';
+function drawFuzzyFelt(canvas, fuzzyData, names, tasks, weeks)
+{
+	var ctx = canvas.getContext('2d');
+	ctx.font = 'bold 18px sans-serif';
 
-const cellWidth=200
-const cellHeight=100
-const numWeeks=8
-const numPeople=6
+	const numWeeks=weeks.length;
+	const numPeople=names.length;
 
-const numCols=numWeeks
-const numRows=numPeople+2
+	const cellWidth=fuzzyData.m_cellWidth;
+	const cellHeight=fuzzyData.m_cellHeight;
+	const weekX=fuzzyData.m_weekX;
+	const weekY=fuzzyData.m_weekY;
 
-const elementHeight=cellHeight-10
+	const numCols=numWeeks;
+	const numRows=numPeople+2;
 
-const weekWidth=cellWidth
-const weekX=100
-const weekY=cellHeight
+	const elementHeight=cellHeight-10;
 
-const nameX=0
-const nameY=weekY
-const nameWidth=weekX
-const nameHeight=cellHeight
+	const weekWidth=cellWidth;
 
-const titleX=weekX
-const titleY=0
-const titleWidth=cellWidth
-const titleHeight=cellHeight/2
+	const nameX=0;
+	const nameY=weekY;
+	const nameWidth=weekX;
+	const nameHeight=cellHeight;
 
-var pastelColours=[]
-pastelColours.push("#FF4848")
-pastelColours.push("#06DCFB")
-pastelColours.push("#79FC4E")
-pastelColours.push("#DFE32D")
-pastelColours.push("#DDCEFF")
-pastelColours.push("#B4D1B6")
+	const titleX=weekX;
+	const titleY=0;
+	const titleWidth=cellWidth;
+	const titleHeight=cellHeight/2;
 
-var names=[]
-names.push('Jake T')
-names.push('Lee H')
-names.push('Alex W')
-names.push('Baldur K')
-names.push('Michael N')
-names.push('Paul H')
+	var pastelColours=[
+		"#FF4848",
+		"#06DCFB",
+		"#79FC4E",
+		"#DFE32D",
+		"#DDCEFF",
+		"#B4D1B6",
+	];
 
-var weeks=[]
-weeks.push('November')
-weeks.push('November')
-weeks.push('November')
-weeks.push('November')
-weeks.push('December')
-weeks.push('December')
-weeks.push('December')
-weeks.push('December')
+	// Draw week titles
+	var pastelColourIndex = 0;
+	var lastColourText = '';
 
-function TaskItem(owner, title, duration) {
-	this.m_owner = owner
-	this.m_title = title
-	this.m_duration = duration
+	for (var w = 0; w < numWeeks; w++)
+	{
+		var title = weeks[w];
+		if (title != lastColourText)
+		{
+			pastelColourIndex++;
+			if (pastelColourIndex >= pastelColours.length)
+			{
+				pastelColourIndex = 0;
+			};
+			lastColourText = title;
+		};
+		var titleBGcolour = pastelColours[pastelColourIndex];
+		drawTitle(ctx, title, w, titleX, titleY, titleWidth, titleHeight, titleBGcolour);
+	};
+
+	// Draw name titles
+	pastelColourIndex = 0;
+	lastColourText = '';
+
+	for (var n = 0; n < numPeople; n++)
+	{
+		var name = names[n];
+		if (name != lastColourText)
+		{
+			pastelColourIndex++;
+			if (pastelColourIndex >= pastelColours.length)
+			{
+				pastelColourIndex = 0;
+			};
+			lastColourText = name;
+		};
+		var nameBGcolour = pastelColours[pastelColourIndex];
+		drawName(ctx, name, n, nameX, nameY, nameWidth, nameHeight, nameBGcolour);
+	};
+
+	drawGrid(ctx, cellWidth, cellHeight, numRows, numCols, weekX);
+
+	// Draw the fuzzy felt elements
+	for(var n = 0; n < numPeople; n++)
+	{
+		var x0 = weekX;
+		var y = weekY + n*cellHeight + (10/2);
+		name = names[n];
+		for(var i = 0; i < tasks.length; i++)
+		{
+			var task = tasks[i];
+			if (task.m_owner == name)
+			{
+				var text = task.m_title;
+				var duration = task.m_duration;
+				var nw = duration;
+				var w = nw*weekWidth - 10;
+				var h = elementHeight;
+				var x = x0;
+				x+=(10/2);
+				var boxColour = 'rgba('+(255-i*80)+','+(128+i*40)+','+i*80+',1.00)';
+				drawFuzzyFeltElement(ctx,text, x, y, w, h, boxColour);
+				x0 += nw*cellWidth;
+			};
+		};
+	};
 };
+</script>
 
-var tasks=[
-	new TaskItem("Jake T", "Task Number 1", 1),
-	new TaskItem("Jake T", "Task Number 2", 3),
-	new TaskItem("Jake T", "Task Number 3", 2),
-	new TaskItem("Lee H", "Lee Task 1", 2),
-	new TaskItem("Lee H", "Lee Task 2", 1),
-	new TaskItem("Alex W", "Alex Task 1", 3),
-	new TaskItem("Alex W", "Alex Task 2", 1),
-	new TaskItem("Alex W", "Alex Task 3", 2),
-	new TaskItem("Baldur K", "Baldur Task 1", 2),
-	new TaskItem("Baldur K", "Baldur Task 2", 2),
-	new TaskItem("Baldur K", "Baldur Task 3", 1),
-	new TaskItem("Michael N", "Mike Task 1", 1),
-	new TaskItem("Michael N", "Mike Task 2", 2),
-	new TaskItem("Michael N", "Mike Task 3", 1),
-	new TaskItem("Paul H", "Paul H Task 1", 2),
-	new TaskItem("Paul H", "Paul H Task 2", 1),
-	new TaskItem("Paul H", "Paul H Task 3", 2),
+<script type="text/javascript">
+var names=[
+	'Jake T',
+	'Lee H',
+	'Alex W',
+	'Baldur K',
+	'Michael N',
+	'Paul H',
 ];
 
-// Draw week titles
-var pastelColourIndex = 0
-var lastColourText = ''
+var shortTasks=[
+	new TaskItem("Jake T", "Task Number 1", 1),
+	new TaskItem("Jake T", "Task Number 2", 1),
+	new TaskItem("Jake T", "Task Number 3", 1),
+	new TaskItem("Lee H", "Lee Task 1", 1),
+	new TaskItem("Lee H", "Lee Task 2", 1),
+	new TaskItem("Alex W", "Alex Task 1", 1),
+	new TaskItem("Alex W", "Alex Task 2", 1),
+	new TaskItem("Alex W", "Alex Task 3", 1),
+	new TaskItem("Baldur K", "Baldur Task 1", 1),
+	new TaskItem("Baldur K", "Baldur Task 2", 1),
+	new TaskItem("Baldur K", "Baldur Task 3", 1),
+	new TaskItem("Michael N", "Mike Task 1", 1),
+	new TaskItem("Michael N", "Mike Task 2", 1),
+	new TaskItem("Michael N", "Mike Task 3", 1),
+	new TaskItem("Paul H", "Paul H Task 1", 1),
+	new TaskItem("Paul H", "Paul H Task 2", 1),
+	new TaskItem("Paul H", "Paul H Task 3", 1),
+];
 
-for(var w=0; w<numWeeks; w++) {
-	var title = weeks[w]
-	if (title != lastColourText) {
-		pastelColourIndex++
-		if (pastelColourIndex >= pastelColours.length) {
-			pastelColourIndex = 0
-		};
-		lastColourText = title
-	};
-	var titleBGcolour = pastelColours[pastelColourIndex]
-	drawTitle(context2d, title, w, titleX, titleY, titleWidth, titleHeight, titleBGcolour)
-};
+var futureTasks=[
+	new TaskItem("Jake T", "Future Task Number 1", 1),
+	new TaskItem("Jake T", "Future Task Number 2", 3),
+	new TaskItem("Jake T", "Future Task Number 3", 2),
+	new TaskItem("Lee H", "Future Lee Task 1", 2),
+	new TaskItem("Lee H", "Future Lee Task 2", 1),
+	new TaskItem("Alex W", "Future Alex Task 1", 3),
+	new TaskItem("Alex W", "Future Alex Task 2", 1),
+	new TaskItem("Alex W", "Future Alex Task 3", 2),
+	new TaskItem("Baldur K", "Baldur Future Task 1", 2),
+	new TaskItem("Baldur K", "Baldur Future Task 2", 2),
+	new TaskItem("Baldur K", "Baldur Future Task 3", 1),
+	new TaskItem("Michael N", "Mike Future Task 1", 1),
+	new TaskItem("Michael N", "Mike Future Task 2", 2),
+	new TaskItem("Michael N", "Mike Future Task 3", 1),
+	new TaskItem("Paul H", "Paul H Future Task 1", 2),
+	new TaskItem("Paul H", "Paul H Future Task 2", 1),
+	new TaskItem("Paul H", "Paul H Future Task 3", 2),
+];
 
-// Draw name titles
-pastelColourIndex = 0
-lastColourText = ''
+var shortWeeks=[
+	'November',
+	'November',
+	'November',
+	'November',
+];
 
-for(var n=0; n<numPeople; n++) {
-	var name = names[n]
-	if (name != lastColourText) {
-		pastelColourIndex++
-		if (pastelColourIndex >= pastelColours.length) {
-			pastelColourIndex = 0
-		};
-		lastColourText = name
-	};
-	var nameBGcolour = pastelColours[pastelColourIndex]
-	drawName(context2d, name, n, nameX, nameY, nameWidth, nameHeight, nameBGcolour)
-};
+var futureWeeks=[ 
+	'December',
+	'December',
+	'December',
+	'December',
+	'January',
+	'January',
+	'January',
+	'January',
+	'February',
+	'February',
+	'February',
+	'February',
+	'March',
+	'March',
+	'March',
+	'March',
+];
 
-drawGrid(context2d, cellWidth, cellHeight, numRows, numCols, weekX)
+var shortCanvas = document.getElementById("canvas_short");
+var futureCanvas = document.getElementById("canvas_future");
 
-// Draw the fuzzy felt elements
-for(var n = 0; n < numPeople; n++) {
-	var x0 = weekX
-	var y = weekY + n*cellHeight + (10/2)
-	name = names[n]
-	for(var i = 0; i < tasks.length; i++) {
-		var task = tasks[i]
-		if (task.m_owner == name) {
-			var text = task.m_title
-			var duration = task.m_duration
-			var nw = duration + 1
-			var w = nw*weekWidth - 10
-			var h = elementHeight
-			var x = x0
-			x+=(10/2)
-			var boxColour = 'rgba('+(255-i*80)+','+(128+i*40)+','+i*80+',1.00)';
-			drawFuzzyFeltElement(context2d,text, x, y, w, h, boxColour)
-			x0 += nw*cellWidth
-		};
-	};
-};
+const cellWidth=200;
+const cellHeight=100;
+const weekX=100;
+const weekY=cellHeight;
+var fuzzyViewData = new FuzzyViewData(cellWidth, cellHeight, weekX, weekY)
+drawFuzzyFelt(shortCanvas, fuzzyViewData, names, shortTasks, shortWeeks);
 
+fuzzyViewData.m_cellWidth=150
+drawFuzzyFelt(futureCanvas, fuzzyViewData, names, futureTasks, futureWeeks);
 
 </script>
 </div>
