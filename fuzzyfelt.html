@@ -8,11 +8,11 @@
 	<body>
 <div>
 <h1>Short Term Tasks</h1>
-<canvas id="canvas_short" width=2000 height=600 style="width:380;height:240;" />
+<canvas id="canvas_short" width=1500 height=2300 style="width:380;height:240;" />
 </div>
 <h1>Future Tasks</h1>
 <div>
-<canvas id="canvas_future" width=8000 height=600 style="width:380;height:240;" />
+<canvas id="canvas_future" width=8000 height=2300 style="width:380;height:240;" />
 </div>
 
 <script type="text/javascript">
@@ -67,6 +67,19 @@ const MEDIUM_RISK = 4;
 const LOW_RISK = 5;
 const TASK_UNDEFINED = 6;
 const TASK_DONE = 7;
+const HOLIDAY = 8;
+
+var boxColours = [
+	"#FF0000", // HIGH_PRIORITY = 0;
+	"#FFFF00", // MEDIUM_PRIORITY = 1;
+	"#00FF00", // LOW_PRIORITY = 2;
+	"#FF0000", // HIGH_RISK = 3;
+	"#FFFF00", // MEDIUM_RISK = 4;
+	"#00FF00", // LOW_RISK = 5;
+	"#0000FF", // TASK_UNDEFINED = 6;
+	"#707070", // TASK_DONE = 7;
+	"#F535AA", // HOLIDAY = 8;
+];
 
 function TaskItem(owner, title, duration, taskStatus)
 {
@@ -76,10 +89,11 @@ function TaskItem(owner, title, duration, taskStatus)
 	this.m_taskStatus = taskStatus;
 };
 
-function FuzzyViewData(cellWidth, cellHeight, weekX, weekY)
+function FuzzyViewData(cellWidth, cellHeight, nameX, weekX, weekY)
 {
 	this.m_cellWidth = cellWidth;
 	this.m_cellHeight = cellHeight;
+	this.m_nameX = nameX;
 	this.m_weekX = weekX;
 	this.m_weekY = weekY;
 };
@@ -136,7 +150,7 @@ function drawRowLine(ctx, x, y, w)
 	ctx.stroke();
 };
 
-function drawGrid(ctx, cellWidth, cellHeight, numRows, numCols, weekX)
+function drawGrid(ctx, cellWidth, cellHeight, numRows, numCols, nameX, weekX)
 {
 	var w = cellWidth*numCols + weekX;
 	var h = cellHeight*numRows;
@@ -144,6 +158,8 @@ function drawGrid(ctx, cellWidth, cellHeight, numRows, numCols, weekX)
 	// Draw the column lines
 	var x0 = 0;
 	var y0 = 0;
+	drawColumnLine(ctx, x0, y0, h);
+	x0 = nameX;
 	drawColumnLine(ctx, x0, y0, h);
 	x0 = weekX;
 	for (var i = 0; i < numCols; i++)
@@ -165,20 +181,57 @@ function drawGrid(ctx, cellWidth, cellHeight, numRows, numCols, weekX)
 	drawRowLine(ctx, x0, y0, w);
 };
 
-function drawTitle(ctx, title, n, titleX, titleY, titleWidth, titleHeight, bgColour)
+function drawLegendShort(ctx, legendX, legendY, legendWidth, legendHeight)
 {
-	var x0 = titleX + n*titleWidth;
-	var y0 = titleY;
+	var x = legendX;
+	var w = legendWidth - 10;
+	var h = legendHeight -10;
 
+	x += (10/2);
+	y = legendY;
+	y += (10/2);
+	drawFuzzyFeltElement(ctx, "High Risk +100%", x, y, w, h, boxColours[HIGH_RISK]);
+	y += legendHeight;
+	drawFuzzyFeltElement(ctx, "Medium Risk +50%", x, y, w, h, boxColours[MEDIUM_RISK]);
+	y += legendHeight;
+	drawFuzzyFeltElement(ctx, "Low Risk +0%", x, y, w, h, boxColours[LOW_RISK]);
+	y += legendHeight;
+	drawFuzzyFeltElement(ctx, "Task Details Unknown", x, y, w, h, boxColours[TASK_UNDEFINED]);
+	y += legendHeight;
+	drawFuzzyFeltElement(ctx, "Task Completed", x, y, w, h, boxColours[TASK_DONE]);
+	y += legendHeight;
+}
+
+function drawLegendFuture(ctx, legendX, legendY, legendWidth, legendHeight)
+{
+	var x = legendX;
+	var w = legendWidth - 10;
+	var h = legendHeight -10;
+
+	x += (10/2);
+	y = legendY;
+	y += (10/2);
+	drawFuzzyFeltElement(ctx, "High Priority", x, y, w, h, boxColours[HIGH_PRIORITY]);
+	y += legendHeight;
+	drawFuzzyFeltElement(ctx, "Medium Priority", x, y, w, h, boxColours[MEDIUM_PRIORITY]);
+	y += legendHeight;
+	drawFuzzyFeltElement(ctx, "Low Priority", x, y, w, h, boxColours[LOW_PRIORITY]);
+	y += legendHeight;
+	drawFuzzyFeltElement(ctx, "Task Details Unknown", x, y, w, h, boxColours[TASK_UNDEFINED]);
+	y += legendHeight;
+}
+
+function drawCellText(ctx, text, x0, y0, w, h, bgColour)
+{
 	ctx.shadowOffsetX = 0;
 	ctx.shadowOffsetY = 0;
 	ctx.shadowBlur = 0;
 	ctx.fillStyle = bgColour;
 	ctx.lineWidth = 0.0;
-	ctx.fillRect(x0, y0, titleWidth, titleHeight);
+	ctx.fillRect(x0, y0, w, h);
 
-	var xc = x0 + titleWidth/2;
-	var yc = y0 + titleHeight/2;
+	var xc = x0 + w/2;
+	var yc = y0 + h/2;
 	ctx.shadowOffsetX = 0;
 	ctx.shadowOffsetY = 0;
 	ctx.shadowBlur = 0;
@@ -187,29 +240,21 @@ function drawTitle(ctx, title, n, titleX, titleY, titleWidth, titleHeight, bgCol
 	ctx.strokeStyle = 'rgba(0,0,0,1.0)';
 	ctx.lineWidth  = 4.0;
 	ctx.fillStyle = '#000';
-	ctx.fillText(title, xc, yc);
+	ctx.fillText(text, xc, yc);
+};
+
+function drawTitle(ctx, title, n, titleX, titleY, titleWidth, titleHeight, bgColour)
+{
+	var x0 = titleX + n*titleWidth;
+	var y0 = titleY;
+	drawCellText(ctx, title, x0, y0, titleWidth, titleHeight, bgColour);
 };
 
 function drawName(ctx, name, n, nameX, nameY, nameWidth, nameHeight, bgColour)
 {
 	var x0 = nameX;
 	var y0 = nameY + n*nameHeight;
-
-	ctx.shadowOffsetX = 0;
-	ctx.shadowOffsetY = 0;
-	ctx.shadowBlur = 0;
-	ctx.fillStyle = bgColour;
-	ctx.lineWidth = 0.0;
-	ctx.fillRect(x0, y0, nameWidth, nameHeight);
-
-	var xc = x0 + nameWidth/2;
-	var yc = y0 + nameHeight/2;
-	ctx.textAlign = 'center';
-	ctx.textBaseline = 'middle';
-	ctx.strokeStyle = 'rgba(0,0,0,1.0)';
-	ctx.lineWidth  = 4.0;
-	ctx.fillStyle = '#000';
-	ctx.fillText(name, xc, yc);
+	drawCellText(ctx, name, x0, y0, nameWidth, nameHeight, bgColour);
 };
 
 function drawFuzzyFeltElement(ctx,text, x, y, w, h, boxColour)
@@ -244,7 +289,7 @@ function drawFuzzyFeltElement(ctx,text, x, y, w, h, boxColour)
 	};
 };
 
-function drawFuzzyFelt(canvas, fuzzyData, names, tasks, weeks)
+function drawFuzzyFelt(canvas, fuzzyData, names, tasks, weeks, shortTermPlan)
 {
 	var ctx = canvas.getContext('2d');
 	ctx.font = 'bold 18px sans-serif';
@@ -254,6 +299,7 @@ function drawFuzzyFelt(canvas, fuzzyData, names, tasks, weeks)
 
 	const cellWidth=fuzzyData.m_cellWidth;
 	const cellHeight=fuzzyData.m_cellHeight;
+	const nameX=fuzzyData.m_nameX;
 	const weekX=fuzzyData.m_weekX;
 	const weekY=fuzzyData.m_weekY;
 
@@ -264,9 +310,8 @@ function drawFuzzyFelt(canvas, fuzzyData, names, tasks, weeks)
 
 	const weekWidth=cellWidth;
 
-	const nameX=0;
 	const nameY=weekY;
-	const nameWidth=weekX;
+	const nameWidth=weekX-nameX;
 	const nameHeight=cellHeight;
 
 	const titleX=weekX;
@@ -274,24 +319,18 @@ function drawFuzzyFelt(canvas, fuzzyData, names, tasks, weeks)
 	const titleWidth=cellWidth;
 	const titleHeight=cellHeight/2;
 
-	var pastelColours=[
+	const legendX = 0;
+	const legendY = weekY;
+	const legendWidth = nameX-legendX;
+	const legendHeight = cellHeight;
+
+	var pastelColours = [
 		"#FF4848",
 		"#06DCFB",
 		"#79FC4E",
 		"#DFE32D",
 		"#DDCEFF",
 		"#B4D1B6",
-	];
-
-	var boxColours=[
-		"#FF0000", // HIGH_PRIORITY = 0;
-		"#FFFF00", // MEDIUM_PRIORITY = 1;
-		"#00FF00", // LOW_PRIORITY = 2;
-		"#FF0000", // HIGH_RISK = 3;
-		"#FFFF00", // MEDIUM_RISK = 4;
-		"#00FF00", // LOW_RISK = 5;
-		"#0000FF", // TASK_UNDEFINED = 6;
-		"#707070", // TASK_DONE = 7;
 	];
 
 	// Draw week titles
@@ -334,15 +373,23 @@ function drawFuzzyFelt(canvas, fuzzyData, names, tasks, weeks)
 		drawName(ctx, name, n, nameX, nameY, nameWidth, nameHeight, nameBGcolour);
 	};
 
-	drawGrid(ctx, cellWidth, cellHeight, numRows, numCols, weekX);
+	drawGrid(ctx, cellWidth, cellHeight, numRows, numCols, nameX, weekX);
+	if (shortTermPlan)
+	{
+		drawLegendShort(ctx, legendX, legendY, legendWidth, legendHeight);
+	}
+	else
+	{
+		drawLegendFuture(ctx, legendX, legendY, legendWidth, legendHeight);
+	}
 
 	// Draw the fuzzy felt elements
-	for(var n = 0; n < numPeople; n++)
+	for (var n = 0; n < numPeople; n++)
 	{
 		var x0 = weekX;
 		var y = weekY + n*cellHeight + (10/2);
 		name = names[n];
-		for(var i = 0; i < tasks.length; i++)
+		for (var i = 0; i < tasks.length; i++)
 		{
 			var task = tasks[i];
 			if (task.m_owner == name)
@@ -357,7 +404,7 @@ function drawFuzzyFelt(canvas, fuzzyData, names, tasks, weeks)
 				x += (10/2);
 				var boxColour = boxColours[taskStatus]
 
-				drawFuzzyFeltElement(ctx,text, x, y, w, h, boxColour);
+				drawFuzzyFeltElement(ctx, text, x, y, w, h, boxColour);
 
 				x0 += duration * cellWidth;
 			};
@@ -367,63 +414,133 @@ function drawFuzzyFelt(canvas, fuzzyData, names, tasks, weeks)
 </script>
 
 <script type="text/javascript">
-var names=[
-	'Jake T',
-	'Lee H',
-	'Alex W',
-	'Baldur K',
-	'Michael N',
+
+var names = [
+	'Lee',
 	'Paul H',
+	'Michael N',
+	'Andy C',
+	'Paul M',
+	'Jake',
+	'Baldur',
+	'Andy K',
+	'James C',
+	'Alex W',
+	'Chris B',
+	'Stan',
+	'Rob J',
+	'JohnMichael',
+	'Andy M',
+	'Andy R',
+	'Stephen B',
+	'Sandy',
+	'Oli',
+	'Charlie',
+	'Miles',
 ];
 
-var shortTasks=[
-	new TaskItem("Jake T", "Task Number 1", 1, LOW_RISK),
-	new TaskItem("Jake T", "Task Number 2", 1, LOW_RISK),
-	new TaskItem("Jake T", "Task Number 3", 1, LOW_RISK),
-	new TaskItem("Lee H", "Lee Task 1", 1, HIGH_RISK),
-	new TaskItem("Lee H", "Lee Task 2", 1, LOW_RISK),
-	new TaskItem("Alex W", "Alex Task 1", 1, LOW_RISK),
-	new TaskItem("Alex W", "Alex Task 2", 1, MEDIUM_RISK),
-	new TaskItem("Alex W", "Alex Task 3", 1, LOW_RISK),
-	new TaskItem("Baldur K", "Baldur Task 1", 1, TASK_DONE),
-	new TaskItem("Baldur K", "Baldur Task 2", 1, TASK_DONE),
-	new TaskItem("Baldur K", "Baldur Task 3", 1, HIGH_RISK),
-	new TaskItem("Michael N", "Mike Task 1", 1, TASK_UNDEFINED),
-	new TaskItem("Michael N", "Mike Task 2", 1, LOW_RISK),
-	new TaskItem("Michael N", "Mike Task 3", 1, LOW_RISK),
-	new TaskItem("Paul H", "Paul H Task 1", 1, LOW_RISK),
-	new TaskItem("Paul H", "Paul H Task 2", 1, LOW_RISK),
-	new TaskItem("Paul H", "Paul H Task 3", 1, LOW_RISK),
+var shortTasks = [
+	new TaskItem("Lee", "C3: Integrate DirtySocks", 1, MEDIUM_RISK),
+	new TaskItem("Lee", "C3: Integrate Blaze PC LAN Mode Working", 1, MEDIUM_RISK),
+	new TaskItem("Lee", "C3: Integrate Blaze PC Online Mode Working", 1, HIGH_RISK),
+	new TaskItem("Lee", "C3: Integrate Blaze PC Online Mode Working", 1, HIGH_RISK),
+	new TaskItem("Paul H", "Holiday", 1, HOLIDAY),
+	new TaskItem("Paul H", "C3, HF2: Squeeze network packet b/w", 1, MEDIUM_RISK),
+	new TaskItem("Paul H", "C3, HF2: Squeeze network packet b/w", 1, MEDIUM_RISK),
+	new TaskItem("Paul H", "C3, HF2: remove C2 hacks from CryLobby", 1, LOW_RISK),
+	new TaskItem("Michael N", "C3, HF2: basic bandwidth output in statoscope", 1, LOW_RISK),
+	new TaskItem("Michael N", "C3, HF2: detailed bandwidth output in statoscope", 1, LOW_RISK),
+	new TaskItem("Michael N", "WF: Pri 1 network thread update mode and dedicated server performance", 1, MEDIUM_RISK),
+	new TaskItem("Michael N", "WF: Pri 3 remove 'wrld', ARITH ENCODER OFF", 1, LOW_RISK),
+	new TaskItem("Andy C", "C3, HF2: new NetTimer editor bugs", 1, LOW_RISK),
+	new TaskItem("Andy C", "C3, HF2: new NetTimer MP end of session bugs", 1, LOW_RISK),
+	new TaskItem("Andy C", "C3, HF2: message Queue and packet rate: bug fixes", 1, LOW_RISK),
+	new TaskItem("Andy C", "C3, HF2: message Queue and packet rate: testing & commit", 1, LOW_RISK),
+	new TaskItem("Paul M", "C3: Remove GS lobby data ID's from public interface", 1, LOW_RISK),
+	new TaskItem("Paul M", "C3: Remove GS lobby data ID's from public interface: testing, game side, committing", 1, LOW_RISK),
+	new TaskItem("Paul M", "C3: CryLobby GameSpy rewrite Move presence tasks into new component: login, logout", 1, LOW_RISK),
+	new TaskItem("Paul M", "C3: CryLobby GameSpy rewrite Move presence tasks into new component: create new account", 1, LOW_RISK),
+	new TaskItem("Jake", "Write Up Meetings", 1, LOW_RISK),
+	new TaskItem("Jake", "Write Up Meetings", 1, LOW_RISK),
+	new TaskItem("Jake", "Write Up Meetings", 1, LOW_RISK),
+	new TaskItem("Jake", "Write Up Meetings", 1, LOW_RISK),
+	new TaskItem("Baldur", "C3: Water ripples when in water volumes on the swamp level", 1, LOW_RISK),
+	new TaskItem("Baldur", "Vegetation: dissolve & instancing fixes", 1, LOW_RISK),
+	new TaskItem("Baldur", "C3: commit C1C vegetation changes into dev/c3", 1, LOW_RISK),
+	new TaskItem("Baldur", "C3: vegetation interaction improvements - TBD", 1, TASK_UNDEFINED),
+	new TaskItem("Andy K", "Holiday", 1, HOLIDAY),
+	new TaskItem("Andy K", "Cafe: fix SDK1.8 shader problems", 1, MEDIUM_RISK),
+	new TaskItem("Andy K", "Cafe: shader compiler EXE instead of lib for hlsl->glsl", 1, MEDIUM_RISK),
+	new TaskItem("Andy K", "HF2: Terrain rendering improvements", 1, TASK_UNDEFINED),
+	new TaskItem("James C", "C3: optimise 3D menu support in the render loop: investigate potential options", 1, LOW_RISK),
+	new TaskItem("James C", "C3: optimise 3D menu support in the render loop: implementation, profiling & timing", 1, LOW_RISK),
+	new TaskItem("James C", "C3: cloaking improvements - TBD", 2, TASK_UNDEFINED),
+	new TaskItem("Alex W", "C3, HF2: C1C Integrates", 1, LOW_RISK),
+	new TaskItem("Alex W", "Cafe: DXPS file/class renaming & tidyup", 1, LOW_RISK),
+	new TaskItem("Alex W", "HF2: AO static & dyanmic, research into options including memory impact on consoles", 1, TASK_UNDEFINED),
+	new TaskItem("Alex W", "HF2: AO research & prototype development - TBD", 1, TASK_UNDEFINED),
+	new TaskItem("Chris B", "Chris B Task 1", 1, TASK_DONE),
+	new TaskItem("Chris B", "Chris B Task 1", 1, TASK_DONE),
+	new TaskItem("Chris B", "Chris B Task 1", 1, TASK_DONE),
+	new TaskItem("Stan", "Stan Task 1", 1, TASK_DONE),
+	new TaskItem("Stan", "Stan Task 2", 1, TASK_DONE),
+	new TaskItem("Stan", "Stan Task 3", 1, HIGH_RISK),
+	new TaskItem("Rob J", "Rob J Task 1", 1, LOW_RISK),
+	new TaskItem("Rob J", "Rob J Task 2", 1, LOW_RISK),
+	new TaskItem("JohnMichael", "JohnMichael Task 1", 1, LOW_RISK),
+	new TaskItem("JohnMichael", "JohnMichael Task 2", 1, LOW_RISK),
+	new TaskItem("JohnMichael", "JohnMichael Task 3", 1, LOW_RISK),
+	new TaskItem("Andy M", "Andy M Task 1", 1, LOW_RISK),
+	new TaskItem("Andy R", "Andy R Task 1", 1, LOW_RISK),
+	new TaskItem("Stephen B", "Stephen B Task 1", 1, LOW_RISK),
+	new TaskItem("Sandy", "Sandy Task 1", 1, LOW_RISK),
+	new TaskItem("Oli", "Oli Task 1", 1, LOW_RISK),
+	new TaskItem("Charlie", "Charlie Task 1", 1, LOW_RISK),
+	new TaskItem("Miles", "Miles Task 1", 1, LOW_RISK),
 ];
 
-var futureTasks=[
-	new TaskItem("Jake T", "Future Task Number 1", 1, LOW_PRIORITY),
-	new TaskItem("Jake T", "Future Task Number 2", 3, LOW_PRIORITY),
-	new TaskItem("Jake T", "Future Task Number 3", 2, LOW_PRIORITY),
-	new TaskItem("Lee H", "Future Lee Task 1", 2, MEDIUM_PRIORITY),
-	new TaskItem("Lee H", "Future Lee Task 2", 1, MEDIUM_PRIORITY),
-	new TaskItem("Alex W", "Future Alex Task 1", 3, MEDIUM_PRIORITY),
+var futureTasks = [
+	new TaskItem("Lee", "Lee Future Task 1", 2, MEDIUM_PRIORITY),
+	new TaskItem("Lee", "Lee Future Task 2", 1, MEDIUM_PRIORITY),
+	new TaskItem("Paul H", "Paul H Future Task 1", 1, MEDIUM_PRIORITY),
+	new TaskItem("Michael N", "Michael N Future Task 1", 1, MEDIUM_PRIORITY),
+	new TaskItem("Andy C", "Andy C Future Task 1", 1, MEDIUM_PRIORITY),
+	new TaskItem("Paul M", "Paul M Future Task 1", 1, MEDIUM_PRIORITY),
+	new TaskItem("Jake", "Jake Future Task Number 1", 1, LOW_PRIORITY),
+	new TaskItem("Jake", "Jake Future Task Number 2", 3, LOW_PRIORITY),
+	new TaskItem("Jake", "Jake Future Task Number 3", 2, LOW_PRIORITY),
+	new TaskItem("Baldur", "Baldur Future Task 1", 3, MEDIUM_PRIORITY),
+	new TaskItem("Andy K", "Andy K Future Task 1", 3, MEDIUM_PRIORITY),
+	new TaskItem("James C", "James C Future Task 1", 3, MEDIUM_PRIORITY),
+	new TaskItem("Alex W", "Alex Future Task 1", 3, MEDIUM_PRIORITY),
 	new TaskItem("Alex W", "Future Alex Task 2", 1, MEDIUM_PRIORITY),
 	new TaskItem("Alex W", "Future Alex Task 3", 2, MEDIUM_PRIORITY),
-	new TaskItem("Baldur K", "Baldur Future Task 1", 2, HIGH_PRIORITY),
-	new TaskItem("Baldur K", "Baldur Future Task 2", 2, HIGH_PRIORITY),
-	new TaskItem("Baldur K", "Baldur Future Task 3", 1, HIGH_PRIORITY),
-	new TaskItem("Michael N", "Mike Future Task 1", 1, HIGH_PRIORITY),
-	new TaskItem("Michael N", "Mike Future Task 2", 2, HIGH_PRIORITY),
-	new TaskItem("Michael N", "Mike Future Task 3", 1, HIGH_PRIORITY),
-	new TaskItem("Paul H", "Paul H Future Task 1", 2, HIGH_PRIORITY),
-	new TaskItem("Paul H", "Paul H Future Task 2", 1, HIGH_PRIORITY),
-	new TaskItem("Paul H", "Paul H Future Task 3", 2, HIGH_PRIORITY),
+	new TaskItem("Chris B", "Chris B Future Task 1", 2, HIGH_PRIORITY),
+	new TaskItem("Stan", "Stan Future Task 1", 2, HIGH_PRIORITY),
+	new TaskItem("Stan", "Stan Future Task 2", 1, HIGH_PRIORITY),
+	new TaskItem("Rob J", "Rob J Future Task 1", 1, HIGH_PRIORITY),
+	new TaskItem("Rob J", "Rob J Future Task 2", 2, HIGH_PRIORITY),
+	new TaskItem("Rob J", "Rob J Future Task 3", 1, HIGH_PRIORITY),
+	new TaskItem("JohnMichael", "JohnMichael Future Task 1", 2, HIGH_PRIORITY),
+	new TaskItem("JohnMichael", "JohnMichael Future Task 2", 1, HIGH_PRIORITY),
+	new TaskItem("JohnMichael", "JohnMichael Future Task 3", 2, HIGH_PRIORITY),
+	new TaskItem("Andy M", "Andy M Future Task 3", 2, HIGH_PRIORITY),
+	new TaskItem("Andy R", "Andy R Future Task 3", 2, HIGH_PRIORITY),
+	new TaskItem("Stephen B", "Stephen B Future Task 3", 2, HIGH_PRIORITY),
+	new TaskItem("Sandy", "Sandy Future Task 3", 2, HIGH_PRIORITY),
+	new TaskItem("Oli", "Oli Future Task 3", 2, HIGH_PRIORITY),
+	new TaskItem("Charlie", "Charlie Future Task 3", 2, HIGH_PRIORITY),
+	new TaskItem("Miles", "Miles Future Task 3", 2, HIGH_PRIORITY),
 ];
 
-var shortWeeks=[
+var shortWeeks = [
 	'November',
 	'November',
 	'November',
 	'November',
 ];
 
-var futureWeeks=[ 
+var futureWeeks = [ 
 	'December',
 	'December',
 	'December',
@@ -440,20 +557,57 @@ var futureWeeks=[
 	'March',
 	'March',
 	'March',
+	'April',
+	'April',
+	'April',
+	'April',
+	'May',
+	'May',
+	'May',
+	'May',
+	'June',
+	'June',
+	'June',
+	'June',
+	'July',
+	'July',
+	'July',
+	'July',
+	'August',
+	'August',
+	'August',
+	'August',
+	'September',
+	'September',
+	'September',
+	'September',
+	'October',
+	'October',
+	'October',
+	'October',
+	'November',
+	'November',
+	'November',
+	'November',
+	'December',
+	'December',
+	'December',
+	'December',
 ];
 
 var shortCanvas = document.getElementById("canvas_short");
 var futureCanvas = document.getElementById("canvas_future");
 
-const cellWidth=200;
+const cellWidth=300;
 const cellHeight=100;
-const weekX=100;
+const nameX=120;
+const weekX=nameX+150;
 const weekY=cellHeight;
-var fuzzyViewData = new FuzzyViewData(cellWidth, cellHeight, weekX, weekY)
-drawFuzzyFelt(shortCanvas, fuzzyViewData, names, shortTasks, shortWeeks);
+var fuzzyViewData = new FuzzyViewData(cellWidth, cellHeight, nameX, weekX, weekY)
+drawFuzzyFelt(shortCanvas, fuzzyViewData, names, shortTasks, shortWeeks, true);
 
 fuzzyViewData.m_cellWidth=150
-drawFuzzyFelt(futureCanvas, fuzzyViewData, names, futureTasks, futureWeeks);
+drawFuzzyFelt(futureCanvas, fuzzyViewData, names, futureTasks, futureWeeks, false);
 
 </script>
 </div>
