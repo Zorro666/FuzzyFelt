@@ -1,16 +1,17 @@
 High
-* embed the task data into the page as javascript object data
-* columns with dates
+* columns with dates - need date field on the short term view
 * task boxes for each entry: colours based on risk or priority
 * add legend describing the box colours
-* make short term page
+* make short term page: needs date headings, needs legend, needs task colours
+* make future term page; needs legend, needs task colours
 
 Medium
 * generate html web page from python
 * take input list of tasks: sort, handle priority
-* make future term page
 
 Low
 * take input list of tasks: handle parent
+* dynamic web page: pan, zoom
 * text wrap function - break on characters if a line is too long
 * interactivity support: filtering, change priority on a task and see the update
+* interactivity support: edit task title, edit task duration, create new task
