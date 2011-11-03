@@ -1,9 +1,8 @@
 High
 * columns with dates - need date field on the short term view
-* task boxes for each entry: colours based on risk or priority
 * add legend describing the box colours
-* make short term page: needs date headings, needs legend, needs task colours
-* make future term page; needs legend, needs task colours
+* make short term page: needs date headings, needs legend
+* make future term page; needs legend
 
 Medium
 * generate html web page from python
