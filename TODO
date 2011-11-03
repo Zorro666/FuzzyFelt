@@ -1,8 +1,7 @@
 High
 * columns with dates - need date field on the short term view
-* add legend describing the box colours
-* make short term page: needs date headings, needs legend
-* make future term page; needs legend
+* make short term page: needs real data, needs date headings
+* make future term page; needs real data
 
 Medium
 * generate html web page from python
