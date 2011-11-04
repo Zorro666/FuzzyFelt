@@ -8,11 +8,11 @@
 	<body>
 <div>
 <h1>Short Term Tasks</h1>
-<canvas id="canvas_short" width=1500 height=2300 style="width:380;height:240;" />
+<canvas id="canvas_short" width=1500 height=2800 style="width:380;height:240;" />
 </div>
 <h1>Future Tasks</h1>
 <div>
-<canvas id="canvas_future" width=8000 height=2300 style="width:380;height:240;" />
+<canvas id="canvas_future" width=8000 height=2800 style="width:380;height:240;" />
 </div>
 
 <script type="text/javascript">
@@ -199,6 +199,8 @@ function drawLegendShort(ctx, legendX, legendY, legendWidth, legendHeight)
 	drawFuzzyFeltElement(ctx, "Task Details Unknown", x, y, w, h, boxColours[TASK_UNDEFINED]);
 	y += legendHeight;
 	drawFuzzyFeltElement(ctx, "Task Completed", x, y, w, h, boxColours[TASK_DONE]);
+{html:script=^example.html} 
+{html} 
 	y += legendHeight;
 }
 
@@ -269,10 +271,10 @@ function drawFuzzyFeltElement(ctx,text, x, y, w, h, boxColour)
 	ctx.lineWidth = 4.0;
 	ctx.strokeRectR(x, y, w, h, 20);
 
-	ctx.shadowOffsetX = 3;
-	ctx.shadowOffsetY = 3;
-	ctx.shadowBlur    = 2;
-	ctx.shadowColor   = 'rgba(100, 100, 100, 0.5)';
+	ctx.shadowOffsetX = 0;
+	ctx.shadowOffsetY = 0;
+	ctx.shadowBlur    = 0;
+	ctx.shadowColor   = 'rgba(150, 150, 150, 0.5)';
 	ctx.fillStyle    = '#000';
 	ctx.textAlign = 'center';
 	ctx.textBaseline = 'middle';
@@ -440,63 +442,109 @@ var names = [
 ];
 
 var shortTasks = [
-	new TaskItem("Lee", "C3: Integrate DirtySocks", 1, MEDIUM_RISK),
+	new TaskItem("Lee", "C3: Integrate DirtySocks", 1, TASK_DONE),
 	new TaskItem("Lee", "C3: Integrate Blaze PC LAN Mode Working", 1, MEDIUM_RISK),
 	new TaskItem("Lee", "C3: Integrate Blaze PC Online Mode Working", 1, HIGH_RISK),
 	new TaskItem("Lee", "C3: Integrate Blaze PC Online Mode Working", 1, HIGH_RISK),
-	new TaskItem("Paul H", "Holiday", 1, HOLIDAY),
+
+	new TaskItem("Paul H", "Holiday", 1, TASK_DONE),
 	new TaskItem("Paul H", "C3, HF2: Squeeze network packet b/w", 1, MEDIUM_RISK),
 	new TaskItem("Paul H", "C3, HF2: Squeeze network packet b/w", 1, MEDIUM_RISK),
 	new TaskItem("Paul H", "C3, HF2: remove C2 hacks from CryLobby", 1, LOW_RISK),
+
+	new TaskItem("Michael N", "C3, HF2: detailed bandwidth output in statoscope", 1, TASK_DONE),
 	new TaskItem("Michael N", "C3, HF2: basic bandwidth output in statoscope", 1, LOW_RISK),
-	new TaskItem("Michael N", "C3, HF2: detailed bandwidth output in statoscope", 1, LOW_RISK),
 	new TaskItem("Michael N", "WF: Pri 1 network thread update mode and dedicated server performance", 1, MEDIUM_RISK),
 	new TaskItem("Michael N", "WF: Pri 3 remove 'wrld', ARITH ENCODER OFF", 1, LOW_RISK),
-	new TaskItem("Andy C", "C3, HF2: new NetTimer editor bugs", 1, LOW_RISK),
+
+	new TaskItem("Andy C", "C3, HF2: new NetTimer editor bugs", 1, TASK_DONE),
 	new TaskItem("Andy C", "C3, HF2: new NetTimer MP end of session bugs", 1, LOW_RISK),
 	new TaskItem("Andy C", "C3, HF2: message Queue and packet rate: bug fixes", 1, LOW_RISK),
 	new TaskItem("Andy C", "C3, HF2: message Queue and packet rate: testing & commit", 1, LOW_RISK),
-	new TaskItem("Paul M", "C3: Remove GS lobby data ID's from public interface", 1, LOW_RISK),
+
+	new TaskItem("Paul M", "C3: Remove GS lobby data ID's from public interface", 1, TASK_DONE),
 	new TaskItem("Paul M", "C3: Remove GS lobby data ID's from public interface: testing, game side, committing", 1, LOW_RISK),
 	new TaskItem("Paul M", "C3: CryLobby GameSpy rewrite Move presence tasks into new component: login, logout", 1, LOW_RISK),
 	new TaskItem("Paul M", "C3: CryLobby GameSpy rewrite Move presence tasks into new component: create new account", 1, LOW_RISK),
+
+	new TaskItem("Jake", "Write Up Meetings", 1, TASK_DONE),
 	new TaskItem("Jake", "Write Up Meetings", 1, LOW_RISK),
 	new TaskItem("Jake", "Write Up Meetings", 1, LOW_RISK),
 	new TaskItem("Jake", "Write Up Meetings", 1, LOW_RISK),
-	new TaskItem("Jake", "Write Up Meetings", 1, LOW_RISK),
-	new TaskItem("Baldur", "C3: Water ripples when in water volumes on the swamp level", 1, LOW_RISK),
+
+	new TaskItem("Baldur", "C3: Water ripples when in water volumes on the swamp level", 1,TASK_DONE),
 	new TaskItem("Baldur", "Vegetation: dissolve & instancing fixes", 1, LOW_RISK),
 	new TaskItem("Baldur", "C3: commit C1C vegetation changes into dev/c3", 1, LOW_RISK),
 	new TaskItem("Baldur", "C3: vegetation interaction improvements - TBD", 1, TASK_UNDEFINED),
-	new TaskItem("Andy K", "Holiday", 1, HOLIDAY),
-	new TaskItem("Andy K", "Cafe: fix SDK1.8 shader problems", 1, MEDIUM_RISK),
-	new TaskItem("Andy K", "Cafe: shader compiler EXE instead of lib for hlsl->glsl", 1, MEDIUM_RISK),
+	new TaskItem("Baldur", "C3: optimise 3D menu support in the render loop: investigate potential options", 1, LOW_RISK),
+	new TaskItem("Baldur", "C3: optimise 3D menu support in the render loop: implementation, profiling & timing", 1, LOW_RISK),
+
+	new TaskItem("Andy K", "Holiday", 1, TASK_DONE),
+	new TaskItem("Andy K", "Cafe: fix SDK1.8 shader problems", 1, TASK_DONE),
+	new TaskItem("Andy K", "Cafe: shader compiler EXE instead of lib for hlsl->glsl", 1, LOW_RISK),
 	new TaskItem("Andy K", "HF2: Terrain rendering improvements", 1, TASK_UNDEFINED),
-	new TaskItem("James C", "C3: optimise 3D menu support in the render loop: investigate potential options", 1, LOW_RISK),
-	new TaskItem("James C", "C3: optimise 3D menu support in the render loop: implementation, profiling & timing", 1, LOW_RISK),
+
+	new TaskItem("James C", "C3: optimise 3D menu support in the render loop: investigate potential options", 1, TASK_DONE),
+	new TaskItem("James C", "C3: armour effect - TBD", 3, TASK_UNDEFINED),
 	new TaskItem("James C", "C3: cloaking improvements - TBD", 2, TASK_UNDEFINED),
+
 	new TaskItem("Alex W", "C3, HF2: C1C Integrates", 1, LOW_RISK),
-	new TaskItem("Alex W", "Cafe: DXPS file/class renaming & tidyup", 1, LOW_RISK),
+	new TaskItem("Alex W", "Cafe: DXPS file/class renaming & tidyup", 1, TASK_DONE),
 	new TaskItem("Alex W", "HF2: AO static & dyanmic, research into options including memory impact on consoles", 1, TASK_UNDEFINED),
 	new TaskItem("Alex W", "HF2: AO research & prototype development - TBD", 1, TASK_UNDEFINED),
-	new TaskItem("Chris B", "Chris B Task 1", 1, TASK_DONE),
-	new TaskItem("Chris B", "Chris B Task 1", 1, TASK_DONE),
-	new TaskItem("Chris B", "Chris B Task 1", 1, TASK_DONE),
-	new TaskItem("Stan", "Stan Task 1", 1, TASK_DONE),
-	new TaskItem("Stan", "Stan Task 2", 1, TASK_DONE),
-	new TaskItem("Stan", "Stan Task 3", 1, HIGH_RISK),
-	new TaskItem("Rob J", "Rob J Task 1", 1, LOW_RISK),
-	new TaskItem("Rob J", "Rob J Task 2", 1, LOW_RISK),
-	new TaskItem("JohnMichael", "JohnMichael Task 1", 1, LOW_RISK),
-	new TaskItem("JohnMichael", "JohnMichael Task 2", 1, LOW_RISK),
-	new TaskItem("JohnMichael", "JohnMichael Task 3", 1, LOW_RISK),
-	new TaskItem("Andy M", "Andy M Task 1", 1, LOW_RISK),
-	new TaskItem("Andy R", "Andy R Task 1", 1, LOW_RISK),
-	new TaskItem("Stephen B", "Stephen B Task 1", 1, LOW_RISK),
-	new TaskItem("Sandy", "Sandy Task 1", 1, LOW_RISK),
-	new TaskItem("Oli", "Oli Task 1", 1, LOW_RISK),
-	new TaskItem("Charlie", "Charlie Task 1", 1, LOW_RISK),
-	new TaskItem("Miles", "Miles Task 1", 1, LOW_RISK),
+
+	new TaskItem("Chris B", "C3: New Glass: High level glass object management: design", 1, TASK_DONE),
+	new TaskItem("Chris B", "C3: New Glass: High level glass object management: optimisation", 1, LOW_RISK),
+	new TaskItem("Chris B", "C3: New Glass: New Glass Art tweaks/support: in editor", 1, LOW_RISK),
+	new TaskItem("Chris B", "C3: New Glass: New Glass: QA pass and bug fixing", 1, LOW_RISK),
+
+	new TaskItem("Stan", "C3: improve player network interpolation", 1, MEDIUM_RISK),
+	new TaskItem("Stan", "Holiday", 1, HOLIDAY),
+	new TaskItem("Stan", "HF2: vehicle handling tweaks", 1, LOW_RISK),
+	new TaskItem("Stan", "C3: improve & extend collision filtering system: design" , 1, MEDIUM_RISK),
+
+	new TaskItem("Rob J", "C3: GameStream: refactor code and commit it", 1, LOW_RISK),
+	new TaskItem("Rob J", "GameStream: CI build support on local server", 1, TASK_DONE),
+	new TaskItem("Rob J", "GameStream: CI build deployment to network server", 1, LOW_RISK),
+	new TaskItem("Rob J", "GameStream: local PAK updating", 1, HIGH_RISK),
+
+	new TaskItem("JohnMichael", "HF2: lowercase files/dirs in Editor", 1, TASK_DONE),
+	new TaskItem("JohnMichael", "HF2: lowercase files Tools Exporter & RC", 1, MEDIUM_RISK),
+	new TaskItem("JohnMichael", "HF2: Asset Browser tweaks for outsourcing", 1, HIGH_RISK),
+	new TaskItem("JohnMichael", "HF2: Asset Browser tweaks for outsourcing", 1, HIGH_RISK),
+	
+	new TaskItem("Andy M", "C3:  loading profiling with / without uber MP list", 1, TASK_DONE),
+	new TaskItem("Andy M", "C3: pre-cache paks during lobby", 1, LOW_RISK),
+	new TaskItem("Andy M", "C3: loading times: GFX files in custom in-memory pak: custom local build process", 1, LOW_RISK),
+	new TaskItem("Andy M", "C3: loading times: GFX files in custom in-memory pak: finalized build process", 1, LOW_RISK),
+	
+	new TaskItem("Andy R", "Maya: preserve unknown materials", 1, MEDIUM_RISK),
+	new TaskItem("Andy R", "Holiday", 2, HOLIDAY),
+	new TaskItem("Andy R", "Maya: fix broken ragdoll limits", 1, MEDIUM_RISK),
+	
+	new TaskItem("Stephen B", "C3: Amble version of C3 MP stress tester: 360", 1, TASK_DONE),
+	new TaskItem("Stephen B", "C3: Amble version of C3 MP stress tester: PS3", 1, LOW_RISK),
+	new TaskItem("Stephen B", "C3: Amble support for PC C3 MP stress tester", 1, LOW_RISK), 
+	new TaskItem("Stephen B", "C3, HF2: Autotesting use idle devkits (artist, designer, coder)", 1, TASK_UNDEFINED),
+	
+	new TaskItem("Sandy", "PC Version of Amble: tidyup & reporting system", 1, TASK_DONE),
+	new TaskItem("Sandy", "HF2: Amble version of HF2 stress tester: 360", 1, LOW_RISK),
+	new TaskItem("Sandy", "HF2: Amble version of HF2 stress tester: PS3", 1, LOW_RISK),
+	new TaskItem("Sandy", "HF2: Amble version of HF2 stress tester: PC", 1, LOW_RISK),
+
+	new TaskItem("Oli", "C3, HF2: autotesting memory backend processing", 1, TASK_DONE),
+	new TaskItem("Oli", "C3, HF2: autotesting memory web display", 1, MEDIUM_RISK),
+	new TaskItem("Oli", "C3, HF2:memreplay track/warn/error cross module memory abuse", 1, MEDIUM_RISK),
+	new TaskItem("Oli", "C3, HF2:memreplay track/warn/error cross module memory abuse: integration into memory autotesting", 1, LOW_RISK),
+	
+	new TaskItem("Charlie", "C3, HF2: C1C Integrates", 1, TASK_DONE),
+	new TaskItem("Charlie", "Holiday", 1, HOLIDAY),
+	new TaskItem("Charlie", "Blackbox2: track memory access errors run time code", 1, LOW_RISK),
+	new TaskItem("Charlie", "Blackbox2: track memory access errors in processing tool", 1, LOW_RISK),
+		
+	new TaskItem("Miles", "Statoscope: thread scheduling runtime tracking", 1, TASK_DONE),
+	new TaskItem("Miles", "Statoscope: thread scheduling tool processing & display", 1, MEDIUM_RISK),
+	new TaskItem("Miles", "Holiday", 2, HOLIDAY),
 ];
 
 var futureTasks = [
@@ -505,6 +553,7 @@ var futureTasks = [
 	new TaskItem("Paul H", "Paul H Future Task 1", 1, MEDIUM_PRIORITY),
 	new TaskItem("Michael N", "Michael N Future Task 1", 1, MEDIUM_PRIORITY),
 	new TaskItem("Andy C", "Andy C Future Task 1", 1, MEDIUM_PRIORITY),
+	new TaskItem("Andy C", "Fragmentor system update robust", 4, TASK_UNDEFINED),
 	new TaskItem("Paul M", "Paul M Future Task 1", 1, MEDIUM_PRIORITY),
 	new TaskItem("Jake", "Jake Future Task Number 1", 1, LOW_PRIORITY),
 	new TaskItem("Jake", "Jake Future Task Number 2", 3, LOW_PRIORITY),
@@ -516,7 +565,7 @@ var futureTasks = [
 	new TaskItem("Alex W", "Future Alex Task 2", 1, MEDIUM_PRIORITY),
 	new TaskItem("Alex W", "Future Alex Task 3", 2, MEDIUM_PRIORITY),
 	new TaskItem("Chris B", "Chris B Future Task 1", 2, HIGH_PRIORITY),
-	new TaskItem("Stan", "Stan Future Task 1", 2, HIGH_PRIORITY),
+	new TaskItem("Stan", "C3: improve & extend collision filtering system: game code" , 1, HIGH_PRIORITY),
 	new TaskItem("Stan", "Stan Future Task 2", 1, HIGH_PRIORITY),
 	new TaskItem("Rob J", "Rob J Future Task 1", 1, HIGH_PRIORITY),
 	new TaskItem("Rob J", "Rob J Future Task 2", 2, HIGH_PRIORITY),
@@ -598,8 +647,8 @@ var futureWeeks = [
 var shortCanvas = document.getElementById("canvas_short");
 var futureCanvas = document.getElementById("canvas_future");
 
-const cellWidth=300;
-const cellHeight=100;
+const cellWidth=250;
+const cellHeight=120;
 const nameX=120;
 const weekX=nameX+150;
 const weekY=cellHeight;
