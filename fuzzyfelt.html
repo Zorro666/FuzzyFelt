@@ -70,15 +70,15 @@ const TASK_DONE = 7;
 const HOLIDAY = 8;
 
 var boxColours = [
-	"#FF0000", // HIGH_PRIORITY = 0;
-	"#FFFF00", // MEDIUM_PRIORITY = 1;
-	"#00FF00", // LOW_PRIORITY = 2;
-	"#FF0000", // HIGH_RISK = 3;
-	"#FFFF00", // MEDIUM_RISK = 4;
-	"#00FF00", // LOW_RISK = 5;
-	"#0000FF", // TASK_UNDEFINED = 6;
+	"#DD1111", // HIGH_PRIORITY = 0;
+	"#FFCC00", // MEDIUM_PRIORITY = 1;
+	"#22CC00", // LOW_PRIORITY = 2;
+	"#DD1111", // HIGH_RISK = 3;
+	"#FFCC00", // MEDIUM_RISK = 4;
+	"#22CC00", // LOW_RISK = 5;
+	"#3366FF", // TASK_UNDEFINED = 6;
 	"#707070", // TASK_DONE = 7;
-	"#F535AA", // HOLIDAY = 8;
+	"#DD11DD", // HOLIDAY = 8;
 ];
 
 function TaskItem(owner, title, duration, taskStatus)
@@ -199,8 +199,6 @@ function drawLegendShort(ctx, legendX, legendY, legendWidth, legendHeight)
 	drawFuzzyFeltElement(ctx, "Task Details Unknown", x, y, w, h, boxColours[TASK_UNDEFINED]);
 	y += legendHeight;
 	drawFuzzyFeltElement(ctx, "Task Completed", x, y, w, h, boxColours[TASK_DONE]);
-{html:script=^example.html} 
-{html} 
 	y += legendHeight;
 }
 
@@ -291,7 +289,7 @@ function drawFuzzyFeltElement(ctx,text, x, y, w, h, boxColour)
 	};
 };
 
-function drawFuzzyFelt(canvas, fuzzyData, names, tasks, weeks, shortTermPlan)
+function drawFuzzyFelt(canvas, fuzzyData, names, tasks, weeks, shortTermPlan, weekDateStart)
 {
 	var ctx = canvas.getContext('2d');
 	ctx.font = 'bold 18px sans-serif';
@@ -321,6 +319,8 @@ function drawFuzzyFelt(canvas, fuzzyData, names, tasks, weeks, shortTermPlan)
 	const titleWidth=cellWidth;
 	const titleHeight=cellHeight/2;
 
+	const weekDateY = (weekY-titleY)/2
+
 	const legendX = 0;
 	const legendY = weekY;
 	const legendWidth = nameX-legendX;
@@ -338,6 +338,15 @@ function drawFuzzyFelt(canvas, fuzzyData, names, tasks, weeks, shortTermPlan)
 	// Draw week titles
 	var pastelColourIndex = 0;
 	var lastColourText = '';
+	var drawWeekDates = false
+	if (typeof weekDateStart === "string")
+	{
+		drawWeekDates = true
+		var dateBits = weekDateStart.split("/");
+		var weekDay = parseInt(dateBits[0])
+		var weekMonth = parseInt(dateBits[1])
+		var weekYear = parseInt(dateBits[2])
+	}
 
 	for (var w = 0; w < numWeeks; w++)
 	{
@@ -353,6 +362,18 @@ function drawFuzzyFelt(canvas, fuzzyData, names, tasks, weeks, shortTermPlan)
 		};
 		var titleBGcolour = pastelColours[pastelColourIndex];
 		drawTitle(ctx, title, w, titleX, titleY, titleWidth, titleHeight, titleBGcolour);
+
+		// Draw week dates if wanted
+		if (drawWeekDates)
+		{
+			weekDateString = weekDay.toString()+"/"+weekMonth.toString()+"/"+weekYear.toString()
+			drawTitle(ctx, weekDateString, w, titleX, weekDateY, titleWidth, titleHeight, titleBGcolour);
+			weekDay += 7
+			var weekStart = new Date(weekYear, weekMonth-1, weekDay);
+			weekDay = weekStart.getDate();
+			weekMonth = weekStart.getMonth()+1;
+			weekYear = weekStart.getFullYear();
+		}
 	};
 
 	// Draw name titles
@@ -473,11 +494,9 @@ var shortTasks = [
 	new TaskItem("Jake", "Write Up Meetings", 1, LOW_RISK),
 
 	new TaskItem("Baldur", "C3: Water ripples when in water volumes on the swamp level", 1,TASK_DONE),
-	new TaskItem("Baldur", "Vegetation: dissolve & instancing fixes", 1, LOW_RISK),
-	new TaskItem("Baldur", "C3: commit C1C vegetation changes into dev/c3", 1, LOW_RISK),
-	new TaskItem("Baldur", "C3: vegetation interaction improvements - TBD", 1, TASK_UNDEFINED),
 	new TaskItem("Baldur", "C3: optimise 3D menu support in the render loop: investigate potential options", 1, LOW_RISK),
 	new TaskItem("Baldur", "C3: optimise 3D menu support in the render loop: implementation, profiling & timing", 1, LOW_RISK),
+	new TaskItem("Baldur", "Vegetation: dissolve & instancing fixes", 1, LOW_RISK),
 
 	new TaskItem("Andy K", "Holiday", 1, TASK_DONE),
 	new TaskItem("Andy K", "Cafe: fix SDK1.8 shader problems", 1, TASK_DONE),
@@ -486,7 +505,6 @@ var shortTasks = [
 
 	new TaskItem("James C", "C3: optimise 3D menu support in the render loop: investigate potential options", 1, TASK_DONE),
 	new TaskItem("James C", "C3: armour effect - TBD", 3, TASK_UNDEFINED),
-	new TaskItem("James C", "C3: cloaking improvements - TBD", 2, TASK_UNDEFINED),
 
 	new TaskItem("Alex W", "C3, HF2: C1C Integrates", 1, LOW_RISK),
 	new TaskItem("Alex W", "Cafe: DXPS file/class renaming & tidyup", 1, TASK_DONE),
@@ -548,38 +566,172 @@ var shortTasks = [
 ];
 
 var futureTasks = [
-	new TaskItem("Lee", "Lee Future Task 1", 2, MEDIUM_PRIORITY),
-	new TaskItem("Lee", "Lee Future Task 2", 1, MEDIUM_PRIORITY),
-	new TaskItem("Paul H", "Paul H Future Task 1", 1, MEDIUM_PRIORITY),
-	new TaskItem("Michael N", "Michael N Future Task 1", 1, MEDIUM_PRIORITY),
-	new TaskItem("Andy C", "Andy C Future Task 1", 1, MEDIUM_PRIORITY),
+	new TaskItem("Lee", "WF: analyse client reconnect time", 1, HIGH_PRIORITY),
+	new TaskItem("Lee", "WF: profile and plan for next peak (5s)", 1, HIGH_PRIORITY),
+	new TaskItem("Lee", "C3: integrate host migration optimisations into dev/c3 branch (ready for testing)", 1, HIGH_PRIORITY),
+	new TaskItem("Lee", "Holiday", 1, HOLIDAY),
+	new TaskItem("Lee", "Christmas", 1, HOLIDAY),
+	new TaskItem("Lee", "WF: Implement Host Migration optimisations to get below 2 second migration time", 4, HIGH_PRIORITY),
+	new TaskItem("Lee", "C3: Implement Host Migration optimisations - TBD", 4, TASK_UNDEFINED),
+
+	new TaskItem("Paul H", "C3, HF2: remove C2 hacks from CryLobby", 1, LOW_PRIORITY),
+	new TaskItem("Paul H", "WF: Pri3 remove support for aspect profiles - game & engine side", 2, HIGH_PRIORITY),
+	new TaskItem("Paul H", "Holiday", 1, HOLIDAY),
+	new TaskItem("Paul H", "Christmas", 1, HOLIDAY),
+	new TaskItem("Paul H", "HF2: profile mem & CPU 32 player network game", 4, LOW_PRIORITY),
+	new TaskItem("Paul H", "Public API for TCPSteamSocket in CrySystem", 3, LOW_PRIORITY),
+
+	new TaskItem("Michael N", "WF: Pri 1 network thread update modes and dedicated server performance", 2, HIGH_PRIORITY),
+	new TaskItem("Michael N", "Holiday", 2, HOLIDAY),
+	new TaskItem("Michael N", "Christmas", 1, HOLIDAY),
+	new TaskItem("Michael N", "WF: Pri 3 Use adaptive Huffman encoder instead of arith encoder", 2, HIGH_PRIORITY),
+	new TaskItem("Michael N", "C3: profile network mem & CPU for 12 player network game", 2, MEDIUM_PRIORITY),
+	new TaskItem("Michael N", "Network Debug Info: RMI stats, graph, memory stats", 2, LOW_PRIORITY),
+	new TaskItem("Michael N", "C2, HF3: Implement clean version of RMI boost hack", 4, LOW_PRIORITY),
+
+	new TaskItem("Andy C", "WF: Pri 2 pre-allocate EIDs", 2, HIGH_PRIORITY),
+	new TaskItem("Andy C", "WF: Pri 3 memory per player, per net-bound object", 1, HIGH_PRIORITY),
+	new TaskItem("Andy C", "Holiday", 1, HOLIDAY),
+	new TaskItem("Andy C", "Christmas", 1, HOLIDAY),
+	new TaskItem("Andy C", "WF: Pri 3 memory per player, per net-bound object", 1, HIGH_PRIORITY),
+	new TaskItem("Andy C", "C3, HF2: profile lag between game & network send", 2, MEDIUM_PRIORITY),
+	new TaskItem("Andy C", "C3, HF2: profile lag between network receive and game", 2, MEDIUM_PRIORITY),
+	new TaskItem("Andy C", "C3, HF2: load time ticker bug on PC & 360 for vehicles", 1, LOW_PRIORITY),
 	new TaskItem("Andy C", "Fragmentor system update robust", 4, TASK_UNDEFINED),
-	new TaskItem("Paul M", "Paul M Future Task 1", 1, MEDIUM_PRIORITY),
-	new TaskItem("Jake", "Jake Future Task Number 1", 1, LOW_PRIORITY),
-	new TaskItem("Jake", "Jake Future Task Number 2", 3, LOW_PRIORITY),
-	new TaskItem("Jake", "Jake Future Task Number 3", 2, LOW_PRIORITY),
-	new TaskItem("Baldur", "Baldur Future Task 1", 3, MEDIUM_PRIORITY),
-	new TaskItem("Andy K", "Andy K Future Task 1", 3, MEDIUM_PRIORITY),
-	new TaskItem("James C", "James C Future Task 1", 3, MEDIUM_PRIORITY),
-	new TaskItem("Alex W", "Alex Future Task 1", 3, MEDIUM_PRIORITY),
-	new TaskItem("Alex W", "Future Alex Task 2", 1, MEDIUM_PRIORITY),
-	new TaskItem("Alex W", "Future Alex Task 3", 2, MEDIUM_PRIORITY),
-	new TaskItem("Chris B", "Chris B Future Task 1", 2, HIGH_PRIORITY),
+
+	new TaskItem("Paul M", "C3: CryLobby GS rewrite - move account management tasks into new component", 2, HIGH_PRIORITY),
+	new TaskItem("Paul M", "C3: CryLobby GS rewrite - manage GameSpy in lobby service not in the first component", 2, HIGH_PRIORITY),
+	new TaskItem("Paul M", "Christmas", 1, HOLIDAY),
+	new TaskItem("Paul M", "C3: CryLobby GS rewrite - manage GameSpy in lobby service not in the first component", 2, HIGH_PRIORITY),
+	new TaskItem("Paul M", "C3: CryLobby GS rewrite - remove hard coded names in sake tables & fields", 2, HIGH_PRIORITY),
+	new TaskItem("Paul M", "C3: CryLobby GS rewrite - move strongly typed pointers back to lobby service in lobby sedrvice components", 2, HIGH_PRIORITY),
+
+	new TaskItem("Jake", "GO INSANE", 4, TASK_UNDEFINED),
+	new TaskItem("Jake", "Christmas", 1, HOLIDAY),
+	new TaskItem("Jake", "GO INSANE", 12, TASK_UNDEFINED),
+
+	new TaskItem("Baldur", "C3: commit C1C vegetation changes into dev/c3", 1, HIGH_PRIORITY),
+	new TaskItem("Baldur", "C3: vegetation interaction improvements - TBD", 1, TASK_UNDEFINED),
+	new TaskItem("Baldur", "Holiday", 2, HOLIDAY),
+	new TaskItem("Baldur", "Christmas", 1, HOLIDAY),
+	new TaskItem("Baldur", "C3: GPU profile + optimisations on PS3", 4, MEDIUM_PRIORITY),
+	new TaskItem("Baldur", "C3: vegetation interaction improvements - TBD", 4, TASK_UNDEFINED),
+	new TaskItem("Baldur", "HF2: jittering scopes code fix from C1C into HF2", 2, LOW_PRIORITY),
+	new TaskItem("Baldur", "C3, HF2: HW instancing optimisations part 2", 4, LOW_PRIORITY),
+
+	new TaskItem("Andy K", "HF2: Terrain rendering improvements - TBD", 1, TASK_UNDEFINED),
+	new TaskItem("Andy K", "Holiday", 3, HOLIDAY),
+	new TaskItem("Andy K", "Christmas", 1, HOLIDAY),
+	new TaskItem("Andy K", "HF2: Terrain rendering improvements - TBD", 12, TASK_UNDEFINED),
+	new TaskItem("Andy K", "C3: Tiago shadow tasks - TBD", 4, TASK_UNDEFINED),
+	new TaskItem("Andy K", "C3: Tiago shadow tasks - TBD", 4, TASK_UNDEFINED),
+
+	new TaskItem("James C", "C3: armour effect - TBD", 1, TASK_UNDEFINED),
+	new TaskItem("James C", "Holiday", 3, HOLIDAY),
+	new TaskItem("James C", "Christmas", 1, HOLIDAY),
+	new TaskItem("James C", "C3: GPU profile + optimisations on 360", 4, MEDIUM_PRIORITY),
+	new TaskItem("James C", "C3: armour effect - TBD", 10, TASK_UNDEFINED),
+	new TaskItem("James C", "C3: cloaking improvements - TBD", 4, TASK_UNDEFINED),
+	new TaskItem("James C", "C3: cheap silhouette effect for squad outlines", 4, TASK_UNDEFINED),
+	new TaskItem("James C", "C3: E-shield updates/tweaks/feedback", 2, LOW_PRIORITY),
+
+	new TaskItem("Alex W", "HF2: AO research & prototype development - TBD", 3, TASK_UNDEFINED),
+	new TaskItem("Alex W", "Holiday", 1, HOLIDAY),
+	new TaskItem("Alex W", "Christmas", 1, HOLIDAY),
+	new TaskItem("Alex W", "HF2: AO research & prototype development - TBD", 16, TASK_UNDEFINED),
+
+	new TaskItem("Chris B", "C3: Split new glass engine changes into unique changelists and start code reviews", 1, LOW_PRIORITY),
+	new TaskItem("Chris B", "C3: Net test with new glass system, feedback from code reviews ", 1, LOW_PRIORITY),
+	new TaskItem("Chris B", "C3: Fix bugs from QA testing and code review feedback", 1, LOW_PRIORITY),
+	new TaskItem("Chris B", "C3: Commit code with new glass system disabled", 1, LOW_PRIORITY),
+	new TaskItem("Chris B", "Christmas", 1, HOLIDAY),
+	new TaskItem("Chris B", "C3: glow 3D HuF/Menu text special effect", 2, LOW_PRIORITY),
+	new TaskItem("Chris B", "C3: New York feed special rendering/effect system: 3D models in menu++", 4, TASK_UNDEFINED),
+
 	new TaskItem("Stan", "C3: improve & extend collision filtering system: game code" , 1, HIGH_PRIORITY),
-	new TaskItem("Stan", "Stan Future Task 2", 1, HIGH_PRIORITY),
-	new TaskItem("Rob J", "Rob J Future Task 1", 1, HIGH_PRIORITY),
-	new TaskItem("Rob J", "Rob J Future Task 2", 2, HIGH_PRIORITY),
-	new TaskItem("Rob J", "Rob J Future Task 3", 1, HIGH_PRIORITY),
-	new TaskItem("JohnMichael", "JohnMichael Future Task 1", 2, HIGH_PRIORITY),
-	new TaskItem("JohnMichael", "JohnMichael Future Task 2", 1, HIGH_PRIORITY),
-	new TaskItem("JohnMichael", "JohnMichael Future Task 3", 2, HIGH_PRIORITY),
-	new TaskItem("Andy M", "Andy M Future Task 3", 2, HIGH_PRIORITY),
-	new TaskItem("Andy R", "Andy R Future Task 3", 2, HIGH_PRIORITY),
-	new TaskItem("Stephen B", "Stephen B Future Task 3", 2, HIGH_PRIORITY),
-	new TaskItem("Sandy", "Sandy Future Task 3", 2, HIGH_PRIORITY),
-	new TaskItem("Oli", "Oli Future Task 3", 2, HIGH_PRIORITY),
-	new TaskItem("Charlie", "Charlie Future Task 3", 2, HIGH_PRIORITY),
-	new TaskItem("Miles", "Miles Future Task 3", 2, HIGH_PRIORITY),
+	new TaskItem("Stan", "C3: moving platform implementation, game side, non-networked object, driven by the game code", 2, LOW_PRIORITY),
+	new TaskItem("Stan", "Holiday", 1, HOLIDAY),
+	new TaskItem("Stan", "Christmas", 1, HOLIDAY),
+	new TaskItem("Stan", "C3: moving platform implementation, game side, non-networked object, driven by the game code", 2, LOW_PRIORITY),
+	new TaskItem("Stan", "HF2: vehicles don't drive through destructible fences", 4, LOW_PRIORITY),
+	new TaskItem("Stan", "HF2: profile vehicle code performance with large number of vehicles e.g. 20+ vehicles in stress test environment", 2, LOW_PRIORITY),
+	new TaskItem("Stan", "C3: grenade prediction code optimisation", 8, LOW_PRIORITY),
+	
+	new TaskItem("Rob J", "GameStream: local PAK updating", 1, HIGH_PRIORITY),
+	new TaskItem("Rob J", "Holiday", 3, HOLIDAY),
+	new TaskItem("Rob J", "Christmas", 1, HOLIDAY),
+	new TaskItem("Rob J", "C3: localisation tool", 2, HIGH_PRIORITY),
+	new TaskItem("Rob J", "GameStream: 360 version", 2, HIGH_PRIORITY),
+	new TaskItem("Rob J", "GameStream: PS3 version", 2, HIGH_PRIORITY),
+	new TaskItem("Rob J", "GameStream: use with autotesting", 2, MEDIUM_PRIORITY),
+	new TaskItem("Rob J", "GameStream: build from shelf", 2, LOW_PRIORITY),
+	new TaskItem("Rob J", "GameStream: make nightly from incremental builds", 4, TASK_UNDEFINED),
+	new TaskItem("Rob J", "GameStream: IT security make nightly from incremental builds", 4, TASK_UNDEFINED),
+
+	new TaskItem("JohnMichael", "HF2: SpawnEntity flowgraph node from Ryse", 1, HIGH_PRIORITY),
+	new TaskItem("JohnMichael", "HF2: SpawnEntity flowgraph node support for autoresourcelist.txt", 1, HIGH_PRIORITY),
+	new TaskItem("JohnMichael", "BuildSuite: Fingerprinting", 1.5, MEDIUM_PRIORITY),
+	new TaskItem("JohnMichael", "Holiday", 0.5, HOLIDAY),
+	new TaskItem("JohnMichael", "Christmas", 1, HOLIDAY),
+	new TaskItem("JohnMichael", "BuildSuite: command line support for use with autotesting", 2, LOW_PRIORITY),
+	new TaskItem("JohnMichael", "BuildSuite: optimised build distribution system", 2, TASK_UNDEFINED),
+	new TaskItem("JohnMichael", "C3: implement youtube video uploads on PC, PS3 - TBD", 2, TASK_UNDEFINED),
+	new TaskItem("JohnMichael", "C3: implement youtube video uploads on 360 - TBD", 2, TASK_UNDEFINED),
+
+	new TaskItem("Andy M", "Holiday", 2, HOLIDAY),
+	new TaskItem("Andy M", "C3: loading time tweeks - thread balancing", 1, MEDIUM_PRIORITY),
+	new TaskItem("Andy M", "Holiday", 1, HOLIDAY),
+	new TaskItem("Andy M", "Christmas", 1, HOLIDAY),
+	new TaskItem("Andy M", "C3: non-streaming textures precache tweeks", 2, MEDIUM_PRIORITY),
+	new TaskItem("Andy M", "C3: preload queue which can be scheduled during game-startup, smaller precache list (just current loadout)", 2, MEDIUM_PRIORITY),
+	new TaskItem("Andy M", "C3, HF2: profile and identify lag from input layer to game receiving state on 360. Reduce it somehow????", 4, HIGH_PRIORITY),
+	new TaskItem("Andy M", "C3, HF2: profile and identify lag from input layer to game receiving state on PS3. Reduce it somehow????", 4, HIGH_PRIORITY),
+
+	new TaskItem("Andy R", "Maya: investigate moving to Maya modules", 1, LOW_PRIORITY),
+	new TaskItem("Andy R", "Maya: fix CGA/ANM animations", 1, LOW_PRIORITY),
+	new TaskItem("Andy R", "Maya: fix LODs and multiple parts", 1, MEDIUM_PRIORITY),
+	new TaskItem("Andy R", "Holiday", 1, HOLIDAY),
+	new TaskItem("Andy R", "Christmas", 1, HOLIDAY),
+	new TaskItem("Andy R", "Maya: fix joint orientations and LookIK", 1, MEDIUM_PRIORITY),
+	new TaskItem("Andy R", "Maya: Export assets with >1 material group", 1, MEDIUM_PRIORITY),
+	new TaskItem("Andy R", "Maya: Add 'help' to validate system", 1, LOW_PRIORITY),
+	new TaskItem("Andy R", "Maya: Add documentation about system", 1, LOW_PRIORITY),
+	new TaskItem("Andy R", "Maya: installer + for Cinebox", 1, LOW_PRIORITY),
+	new TaskItem("Andy R", "Maya: ?????????????????", 3, MEDIUM_PRIORITY),
+
+	new TaskItem("Stephen B", "C3, HF2: Autotesting use idle devkits (artist, designer, coder)", 3, TASK_UNDEFINED),
+	new TaskItem("Stephen B", "Holiday", 1, HOLIDAY),
+	new TaskItem("Stephen B", "Christmas", 1, HOLIDAY),
+	new TaskItem("Stephen B", "C3, HF2: Visual Regression support in autotesting", 2, HIGH_PRIORITY),
+	new TaskItem("Stephen B", "C3, HF2: autotesting error/warning metrics", 2, HIGH_PRIORITY),
+	new TaskItem("Stephen B", "C3, HF2: trybuild for assets", 4, TASK_UNDEFINED),
+	new TaskItem("Stephen B", "C3, HF2: autotesting improvements and extensionsions -TBD", 4, TASK_UNDEFINED),
+
+	new TaskItem("Sandy", "HF2: Amble version of HF2 stress tester: SP tests", 1, LOW_PRIORITY),
+	new TaskItem("Sandy", "Holiday", 3, HOLIDAY),
+	new TaskItem("Sandy", "Christmas", 1, HOLIDAY),
+	new TaskItem("Sandy", "C3: matchmaking telemetry visualisation tool", 4, TASK_UNDEFINED),
+	new TaskItem("Sandy", "C3, HF2: put spindle tool inside BuildSuite", 4, TASK_UNDEFINED),
+
+	new TaskItem("Oli", "Memreplay: improve UI look and feel", 2, MEDIUM_PRIORITY),
+	new TaskItem("Oli", "Holiday", 2, HOLIDAY),
+	new TaskItem("Oli", "Christmas", 1, HOLIDAY),
+	new TaskItem("Oli", "C3, HF2: streaming system improvements, bug fixing - TBD", 12, TASK_UNDEFINED),
+
+	new TaskItem("Charlie", "Blackbox2: valgrind research", 2, TASK_UNDEFINED),
+	new TaskItem("Charlie", "Holiday", 2, HOLIDAY),
+	new TaskItem("Charlie", "Christmas", 1, HOLIDAY),
+	new TaskItem("Charlie", "C3: CPU profile + optimisations on PS3", 4, MEDIUM_PRIORITY),
+	new TaskItem("Charlie", "Blackbox2: valgrind implementation", 12, TASK_UNDEFINED),
+
+	new TaskItem("Miles", "Holiday", 1, HOLIDAY),
+	new TaskItem("Miles", "Statoscope: event based profiling", 1, HIGH_PRIORITY),
+	new TaskItem("Miles", "C3: optimisation for MaterialEffects system", 1, LOW_PRIORITY),
+	new TaskItem("Miles", "C3: fix texture memory in wrong module bug", 0.5, LOW_PRIORITY),
+	new TaskItem("Miles", "Holiday", 0.5, HOLIDAY),
+	new TaskItem("Miles", "Christmas", 1, HOLIDAY),
+	new TaskItem("Miles", "C3: CPU profile + optimisations on 360", 4, MEDIUM_PRIORITY),
+	new TaskItem("Miles", "C3, HF2: autotesting performance metrics", 2, HIGH_PRIORITY),
 ];
 
 var shortWeeks = [
@@ -590,6 +742,7 @@ var shortWeeks = [
 ];
 
 var futureWeeks = [ 
+	'December',
 	'December',
 	'December',
 	'December',
@@ -650,13 +803,15 @@ var futureCanvas = document.getElementById("canvas_future");
 const cellWidth=250;
 const cellHeight=120;
 const nameX=120;
-const weekX=nameX+150;
+const weekX=nameX+120;
 const weekY=cellHeight;
+const shortDateStart="31/10/2011"
 var fuzzyViewData = new FuzzyViewData(cellWidth, cellHeight, nameX, weekX, weekY)
-drawFuzzyFelt(shortCanvas, fuzzyViewData, names, shortTasks, shortWeeks, true);
+drawFuzzyFelt(shortCanvas, fuzzyViewData, names, shortTasks, shortWeeks, true, shortDateStart);
 
-fuzzyViewData.m_cellWidth=150
-drawFuzzyFelt(futureCanvas, fuzzyViewData, names, futureTasks, futureWeeks, false);
+fuzzyViewData.m_cellWidth=200
+const futureDateStart="28/11/2011"
+drawFuzzyFelt(futureCanvas, fuzzyViewData, names, futureTasks, futureWeeks, false, futureDateStart);
 
 </script>
 </div>
