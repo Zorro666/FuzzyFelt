@@ -1,11 +1,9 @@
 High
-* columns with dates - need date field on the short term view
-* make short term page: needs real data, needs date headings
-* make future term page; needs real data
+* take input list of tasks: sort, handle priority
 
 Medium
 * generate html web page from python
-* take input list of tasks: sort, handle priority
+* extend future term page: needs more real data
 
 Low
 * take input list of tasks: handle parent
