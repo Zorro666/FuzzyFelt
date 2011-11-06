@@ -1,9 +1,10 @@
 High
 * interactivity support: make list of elements to draw, then draw them in render function
 * interactivity support: draw list of elements in render function
-* single list of tasks sorted into date start
 * render single list of tasks into: short, medium, long lists
-* short, medium, long: auto start date just set number of weeks for each view
+* is it one list per canvas? is it automake canvas?
+* locked 2 columns (legend+names)
+* locked 2 rows (month name+date)
 
 Medium
 * generate html web page from python
