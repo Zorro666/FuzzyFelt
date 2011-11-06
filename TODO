@@ -1,13 +1,28 @@
 High
-* take input list of tasks: sort, handle priority
+* interactivity support: make list of elements to draw, then draw them in render function
+* interactivity support: draw list of elements in render function
+* single list of tasks sorted into date start
+* render single list of tasks into: short, medium, long lists
+* short, medium, long: auto start date just set number of weeks for each view
 
 Medium
 * generate html web page from python
 * extend future term page: needs more real data
 
 Low
-* take input list of tasks: handle parent
-* dynamic web page: pan, zoom
+* interactivity support: list of elements can be used for mouse click testing
+* dynamic web page: fixed size canvas (smaller than required display)
+* dynamic web page: pan
+* dynamic web page: zoom
+* sort tasks: handle priority
+* sort tasks: support for locked e.g. holiday or other known tasks
+* sort tasks: handle parent
 * text wrap function - break on characters if a line is too long
-* interactivity support: filtering, change priority on a task and see the update
-* interactivity support: edit task title, edit task duration, create new task
+* interactivity support: change priority on a task and see the update
+* interactivity support: filtering
+* interactivity support: edit task title
+* interactivity support: edit task duration
+* interactivity support: edit task owner
+* interactivity support: edit task parent
+* interactivity support: create new task
+* interactivity support: change box width/height
