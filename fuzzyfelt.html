@@ -16,7 +16,7 @@
 </div>
 <h1>Long Term Tasks</h1>
 <div>
-<canvas id="canvas_long" width=8300 height=2800" />
+<canvas id="canvas_long" width=9300 height=2800" />
 </div>
 
 <script type="text/javascript">
@@ -115,6 +115,7 @@ function TaskItem(owner, title, duration, taskStatus, id)
 		this.m_id = id;
 	}
 	this.m_startDate = null;
+	this.m_endDate = null;
 	this.m_parentID = null;
 }
 
@@ -135,6 +136,18 @@ function FuzzyViewData(cellWidth, cellHeight, nameX, weekX, weekY)
 	this.m_nameX = nameX;
 	this.m_weekX = weekX;
 	this.m_weekY = weekY;
+}
+
+function addDates(startDate, deltaDays)
+{
+	var dateBits = startDate.split("/");
+	var weekDay = parseInt(dateBits[0]);
+	var weekMonth = parseInt(dateBits[1])-1;
+	var weekYear = parseInt(dateBits[2]);
+	weekDay += deltaDays;
+	var date = new Date(weekYear, weekMonth, weekDay);
+	var endDate = date.getDate()+"/"+(date.getMonth()+1)+"/"+date.getFullYear();
+	return endDate;
 }
 
 function makeSortedTasks(tasks, startDate)
@@ -158,13 +171,15 @@ function makeSortedTasks(tasks, startDate)
 			ownerCurrentEnds[owner] = planStartDate;
 		}
 		var startDate = ownerCurrentEnds[owner];
-		task.m_startDate = startDate;
-		sortedTasks.push(task);
 
 		var startDateDay = startDate.getDate();
 		var endDateDay = startDateDay + 7 * duration;
 		var endDate = new Date(startDate.getFullYear(), startDate.getMonth(), endDateDay);
 		ownerCurrentEnds[owner] = endDate;
+
+		task.m_startDate = startDate;
+		task.m_endDate = endDate;
+		sortedTasks.push(task);
 	}
 	return sortedTasks;
 }
@@ -500,11 +515,29 @@ function drawFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 			if (task.m_owner == name)
 			{
 				var startDate = task.m_startDate;
-				if (startDate >= planStartDate)
+				var endDate = task.m_endDate;
+				if (endDate > planStartDate)
 				{
 					var text = task.m_title;
 					var duration = task.m_duration;
 					var taskStatus = task.m_taskStatus;
+
+					numWeeksForPerson += duration;
+					if (numWeeksForPerson > numWeeks)
+					{
+						duration -= (numWeeksForPerson-numWeeks);
+					}
+					if (startDate < planStartDate)
+					{
+						var deltaTime = planStartDate - startDate;
+						var weekDelta = deltaTime/(1000*60*60*24*7);
+						duration -= weekDelta;
+						numWeeksForPerson -= weekDelta;
+					}
+					if (duration <= 0)
+					{
+						alert("Illegal duration"+text+" "+duration);
+					}
 
 					var w = duration * weekWidth - 10;
 					var h = elementHeight;
@@ -516,7 +549,6 @@ function drawFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 					fuzzyFeltElements.push(fuzzyFeltElement);
 
 					x0 += duration * cellWidth;
-					numWeeksForPerson += duration;
 				}
 			}
 			if (numWeeksForPerson >= numWeeks)
@@ -843,16 +875,19 @@ const nameX = 120;
 const weekX = nameX + 120;
 const weekY = cellHeight;
 const shortDateStart = planStartDate;
+const shortNumWeeks = 4;
 var fuzzyViewData = new FuzzyViewData(cellWidth, cellHeight, nameX, weekX, weekY);
-drawFuzzyFelt(shortCanvas, fuzzyViewData, names, sortedTasks, true, shortDateStart, 4);
+drawFuzzyFelt(shortCanvas, fuzzyViewData, names, sortedTasks, true, shortDateStart, shortNumWeeks);
 
 fuzzyViewData.m_cellWidth = 250;
-const mediumDateStart = "28/11/2011";
-drawFuzzyFelt(mediumCanvas, fuzzyViewData, names, sortedTasks, false, mediumDateStart, 13);
+const mediumDateStart = addDates(shortDateStart, shortNumWeeks*7);
+const mediumNumWeeks = 13;
+drawFuzzyFelt(mediumCanvas, fuzzyViewData, names, sortedTasks, false, mediumDateStart, mediumNumWeeks);
 
 fuzzyViewData.m_cellWidth = 250;
-const longDateStart = "27/02/2012";
-drawFuzzyFelt(longCanvas, fuzzyViewData, names, sortedTasks, false, longDateStart, 4*8);
+const longDateStart = addDates(mediumDateStart, mediumNumWeeks*7);
+const longNumWeeks = 52-mediumNumWeeks-shortNumWeeks;
+drawFuzzyFelt(longCanvas, fuzzyViewData, names, sortedTasks, false, longDateStart, longNumWeeks);
 
 </script>
 </div>
