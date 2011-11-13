@@ -6,18 +6,26 @@
 		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 	</head>
 	<body>
-<div>
-<h1>Short Term Tasks</h1>
-<canvas id="canvas_short" width=1300 height=2800" />
-</div>
-<h1>Medium Term Tasks</h1>
-<div>
-<canvas id="canvas_medium" width=3500 height=2800" />
-</div>
-<h1>Long Term Tasks</h1>
-<div>
-<canvas id="canvas_long" width=9300 height=2800" />
-</div>
+
+	<div>
+		<h1>Info Window</h1>
+		<canvas id="canvas_info" width=500 height=30" />
+	</div>
+
+	<div>
+		<h1>Short Term Tasks</h1>
+		<canvas id="canvas_short" width=1300 height=2800" />
+	</div>
+
+	<div>
+		<h1>Medium Term Tasks</h1>
+		<canvas id="canvas_medium" width=3500 height=2800" />
+	</div>
+
+	<div>
+		<h1>Long Term Tasks</h1>
+		<canvas id="canvas_long" width=9300 height=2800" />
+	</div>
 
 <script type="text/javascript">
 
@@ -564,11 +572,72 @@ function drawFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 		internalDrawFuzzyFeltElement(ctx, fuzzyFeltElement);
 	}
 }
+
+function writeMessage(canvas, message)
+{
+    var context = canvas.getContext('2d');
+    context.clearRect(0, 0, canvas.width, canvas.height);
+    context.font = '18pt Calibri';
+    context.fillStyle = 'black';
+    context.fillText(message, 10, 25);
+}
+
+function getMousePos(canvasName, evt)
+{
+	var canvas = document.getElementById(canvasName);
+	// get canvas position
+	var obj = canvas;
+	var top = 0;
+	var left = 0;
+	while (obj.tagName != 'BODY') 
+	{
+		top += obj.offsetTop;
+		left += obj.offsetLeft;
+		obj = obj.offsetParent;
+	}
+
+	// return relative mouse position
+	var mouseX = evt.clientX - left + window.pageXOffset;
+	var mouseY = evt.clientY - top + window.pageYOffset;
+	var inCanvas = false;
+	if ((mouseX >= 0) && (mouseY >= 0) && (mouseX < canvas.width) && (mouseY < canvas.height))
+	{
+		inCanvas = true;
+	}
+	return mousePos = { x: mouseX, y: mouseY, in: inCanvas };
+}
+
+
+function mouseMove(evt)
+{ 
+	var inCanvas = "Short"
+	var mousePos = getMousePos("canvas_short", evt);
+	if (mousePos.in == false)
+	{
+		inCanvas = "Medium"
+		mousePos = getMousePos("canvas_medium", evt);
+	}
+	if (mousePos.in == false)
+	{
+		inCanvas = "Long"
+		mousePos = getMousePos("canvas_long", evt);
+	}
+	if (mousePos.in == true)
+	{
+ 		var message = "Canvas:'" + inCanvas + "' Mouse position: " + mousePos.x + "," + mousePos.y;
+		var infoCanvas = document.getElementById("canvas_info");
+ 		writeMessage(infoCanvas, message);
+	}
+} 
+
 </script>
 
 <script type="text/javascript">
 
-var names = [
+window.onload = function(){
+	window.addEventListener('mousemove', mouseMove, false);
+
+	var names = [
 	'Lee',
 	'Paul H',
 	'Michael N',
@@ -891,12 +960,12 @@ var tasks = [
 	new TaskItem("Miles", "C3, HF2: statoscope buildsuite mode easy use of datagroups", 1, HIGH_PRIORITY),
 ];
 
-const planStartDate = "31/10/2011"
-var sortedTasks = makeSortedTasks(tasks, planStartDate)
-
 var shortCanvas = document.getElementById("canvas_short");
 var mediumCanvas = document.getElementById("canvas_medium");
 var longCanvas = document.getElementById("canvas_long");
+
+const planStartDate = "31/10/2011"
+var sortedTasks = makeSortedTasks(tasks, planStartDate)
 
 const cellWidth = 250;
 const cellHeight = 120;
@@ -905,6 +974,7 @@ const weekX = nameX + 120;
 const weekY = cellHeight;
 const shortDateStart = planStartDate;
 const shortNumWeeks = 4;
+
 var fuzzyViewData = new FuzzyViewData(cellWidth, cellHeight, nameX, weekX, weekY);
 drawFuzzyFelt(shortCanvas, fuzzyViewData, names, sortedTasks, true, shortDateStart, shortNumWeeks);
 
@@ -918,6 +988,7 @@ const longDateStart = addDates(mediumDateStart, mediumNumWeeks*7);
 const longNumWeeks = 52-mediumNumWeeks-shortNumWeeks;
 drawFuzzyFelt(longCanvas, fuzzyViewData, names, sortedTasks, false, longDateStart, longNumWeeks);
 
+}
 </script>
 </div>
 </body>
