@@ -2,7 +2,11 @@ High
 * interactivity support: make list of elements to draw, then draw them in render function
 * interactivity support: draw list of elements in render function
 * render single list of tasks into: short, medium, long lists
-* is it one list per canvas? is it automake canvas?
+* is it one list per canvas? 
+** yes - 1 rectangle list per canvas
+* do mouse hit detection on canvas elements - rectangles to find task under mouse 
+** draw it in different colour: highlight it
+** handle leaving it and moving to new rectangle -> put it back un-highlighted
 * locked 2 columns (legend+names)
 * locked 2 rows (month name+date)
 
