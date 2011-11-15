@@ -1,4 +1,5 @@
 High
+* list of elements to draw should be EVERYTHING not just rectangles
 * interactivity support: make list of elements to draw, then draw them in render function
 * interactivity support: draw list of elements in render function
 * render single list of tasks into: short, medium, long lists
