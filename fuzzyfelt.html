@@ -687,14 +687,53 @@ function mouseMove(evt)
 			{
 				continue;
 			}
-			myLog("mousePos:"+mousePos.x+" "+mousePos.y+" Element:"+x+" "+y+" "+x1+" "+y1);
+			//myLog("mousePos:"+mousePos.x+" "+mousePos.y+" Element:"+x+" "+y+" "+x1+" "+y1);
 			inFuzzyID = i;
 			break;
 		}
+		var oldID = s_globalData["mouseover.id"];
+		var oldCanvas = s_globalData["mouseover.canvas"];
+		var unhilite = true;
 		if (inFuzzyID >= 0)
 		{
-			var element = fuzzyElements[inFuzzyID];
-			writeMessage(infoCanvas, "In:"+inFuzzyID+" text:"+element.m_text);
+			unhilite = false;
+			if ((inFuzzyID != oldID) || (canvas_name != oldCanvas))
+			{
+				unhilite = true;
+				var ctx = canvas.getContext('2d');
+				var element = fuzzyElements[inFuzzyID];
+				writeMessage(infoCanvas, "In:"+inFuzzyID+" text:"+element.m_text);
+				var hilite = new FuzzyFeltElement();
+				hilite.m_x = element.m_x;
+				hilite.m_y = element.m_y;
+				hilite.m_w = element.m_w;
+				hilite.m_h = element.m_h;
+				hilite.m_text = element.m_text;
+				hilite.m_boxColour = element.m_boxColour;
+				hilite.m_boxColour = "#FF00FF";
+				internalDrawFuzzyFeltElement(ctx, hilite);
+
+				s_globalData["mouseover.id"] = inFuzzyID;
+				s_globalData["mouseover.canvas"] = canvas_name;
+			}
+		}
+		if (unhilite == true)
+		{
+			// Un hilite the old object
+			if ((oldID != -1) && (oldCanvas != ""))
+			{
+				canvas = document.getElementById(oldCanvas);
+				var ctx = canvas.getContext('2d');
+				var oldFuzzyElementName = oldCanvas+".fuzzyElements";
+				var oldFuzzyElements = s_globalData[oldFuzzyElementName];
+				var oldElement = fuzzyElements[oldID];
+				internalDrawFuzzyFeltElement(ctx, oldElement);
+			}
+			if (inFuzzyID < 0)
+			{
+				s_globalData["mouseover.id"] = -1;
+				s_globalData["mouseover.canvas"] = "";
+			}
 		}
 	}
 } 
@@ -707,6 +746,9 @@ var s_globalData = new Object();
 
 window.onload = function()
 {
+	s_globalData["mouseover.canvas"] = "";
+	s_globalData["mouseover.id"] = -1;
+
 	window.addEventListener('mousemove', mouseMove, false);
 
 	var resourceNames = [
