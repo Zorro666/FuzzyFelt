@@ -7,7 +7,6 @@
 	</head>
 	<body>
 
-
 	<div>
 		<h1>Info Window</h1>
 		<canvas id="canvas_info" width=1200 height=30" />
@@ -412,6 +411,10 @@ function internalDrawFuzzyFeltElement(ctx, fuzzyFeltElement)
 function drawFuzzyFelt(canvasName, fuzzyFeltElements)
 {
 	var canvas = document.getElementById(canvasName);
+	if (canvas == null)
+	{
+		return
+	}
 	var ctx = canvas.getContext('2d');
 	myLog("drawFuzzyFelt:"+fuzzyFeltElements.length+" "+canvas.id);
 	for (var i = 0; i < fuzzyFeltElements.length; i++)
@@ -605,6 +608,13 @@ function writeMessage(canvas, message)
 
 function getMousePos(canvas, evt)
 {
+	var mouseX = 0;
+	var mouseY = 0;
+	var inCanvas = false;
+	if (canvas == null)
+	{
+		return mousePos = { x: mouseX, y: mouseY, in: inCanvas };
+	}
 	// get canvas position
 	var obj = canvas;
 	var top = 0;
@@ -617,9 +627,9 @@ function getMousePos(canvas, evt)
 	}
 
 	// return relative mouse position
-	var mouseX = evt.clientX - left + window.pageXOffset;
-	var mouseY = evt.clientY - top + window.pageYOffset;
-	var inCanvas = false;
+	mouseX = evt.clientX - left + window.pageXOffset;
+	mouseY = evt.clientY - top + window.pageYOffset;
+	inCanvas = false;
 	if ((mouseX >= 0) && (mouseY >= 0) && (mouseX < canvas.width) && (mouseY < canvas.height))
 	{
 		inCanvas = true;
@@ -633,7 +643,7 @@ function mouseMove(evt)
 	var inCanvas = "";
 	var canvas_name = "";
 	var canvas = null;
-	var mousePos = false;
+	var mousePos = { x: 0, y: 0, in: false };
 
 	inCanvas = "Short"
 	canvas_name = "canvas_short";
@@ -710,7 +720,7 @@ function mouseMove(evt)
 				hilite.m_h = element.m_h;
 				hilite.m_text = element.m_text;
 				hilite.m_boxColour = element.m_boxColour;
-				hilite.m_boxColour = "#FF00FF";
+				hilite.m_boxColour = "#FFFFFF";
 				internalDrawFuzzyFeltElement(ctx, hilite);
 
 				s_globalData["mouseover.id"] = inFuzzyID;
@@ -801,17 +811,29 @@ function makeFuzzyFelts(names, tasks)
 	const shortNumWeeks = 4;
 
 	var fuzzyViewData = new FuzzyViewData(cellWidth, cellHeight, nameX, weekX, weekY);
-	var shortFuzzyElements = makeFuzzyFelt(shortCanvas, fuzzyViewData, names, sortedTasks, true, shortDateStart, shortNumWeeks);
+	var shortFuzzyElements = []
+	if (shortCanvas != null)
+	{
+		shortFuzzyElements = makeFuzzyFelt(shortCanvas, fuzzyViewData, names, sortedTasks, true, shortDateStart, shortNumWeeks);
+	}
 
 	fuzzyViewData.m_cellWidth = 250;
-	const mediumDateStart = addDates(shortDateStart, shortNumWeeks*7);
+	const mediumDateStart = addDates(shortDateStart, (0+shortNumWeeks)*7);
 	const mediumNumWeeks = 13;
-	var mediumFuzzyElements = makeFuzzyFelt(mediumCanvas, fuzzyViewData, names, sortedTasks, false, mediumDateStart, mediumNumWeeks);
+	var mediumFuzzyElements = []
+	if (mediumCanvas != null)
+	{
+		mediumFuzzyElements = makeFuzzyFelt(mediumCanvas, fuzzyViewData, names, sortedTasks, false, mediumDateStart, mediumNumWeeks);
+	}
 
 	fuzzyViewData.m_cellWidth = 250;
 	const longDateStart = addDates(mediumDateStart, mediumNumWeeks*7);
 	const longNumWeeks = 52-mediumNumWeeks-shortNumWeeks;
-	var longFuzzyElements = makeFuzzyFelt(longCanvas, fuzzyViewData, names, sortedTasks, false, longDateStart, longNumWeeks);
+	var longFuzzyElements = []
+	if (longCanvas != null)
+	{
+		longFuzzyElements = makeFuzzyFelt(longCanvas, fuzzyViewData, names, sortedTasks, false, longDateStart, longNumWeeks);
+	}
 
 	s_globalData["canvas_short.fuzzyElements"] = shortFuzzyElements;
 	s_globalData["canvas_medium.fuzzyElements"] = mediumFuzzyElements;
