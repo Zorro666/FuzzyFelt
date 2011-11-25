@@ -1,21 +1,24 @@
 High
+* show selections of names
+* show selected month
+* keyboard handler to help with resetting selections
+** f = full, s = short only, m = medium only, l =long only,
+** n = network team, r = render team, c = ninja team, t = tools team
+
+Medium
 * list of elements to draw should be EVERYTHING not just rectangles
 * interactivity support: make list of elements to draw, then draw them in render function
 * interactivity support: draw list of elements in render function
 * render single list of tasks into: short, medium, long lists
 * is it one list per canvas? 
 ** yes - 1 rectangle list per canvas
-* do mouse hit detection on canvas elements - rectangles to find task under mouse 
-** draw it in different colour: highlight it
-** handle leaving it and moving to new rectangle -> put it back un-highlighted
 * locked 2 columns (legend+names)
 * locked 2 rows (month name+date)
 
-Medium
+Low
 * generate html web page from python
 * extend future term page: needs more real data
 
-Low
 * interactivity support: list of elements can be used for mouse click testing
 * dynamic web page: fixed size canvas (smaller than required display)
 * dynamic web page: pan
