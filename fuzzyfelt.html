@@ -26,6 +26,8 @@
 		<h1>Long Term Tasks</h1>
 		<canvas id="canvas_long" width=0 height=0" />
 	</div>
+<!--
+-->
 
 <script type="text/javascript">
 
@@ -488,6 +490,10 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 {
 	var fuzzyFeltElements = []
 	if (numWeeks == 0)
+	{
+		return fuzzyFeltElements;
+	}
+	if (canvas == null)
 	{
 		return fuzzyFeltElements;
 	}
@@ -1009,8 +1015,11 @@ function makeFuzzyFelts(planStartDate, names, sortedTasks)
 		width = fuzzyViewData.m_cellWidth * numWeeks + fuzzyViewData.m_weekX + widthExtra;
 		height = names.length * fuzzyViewData.m_cellHeight + fuzzyViewData.m_weekY + heightExtra;
 	}
-	shortCanvas.width = width;
-	shortCanvas.height = height;
+	if (shortCanvas != null)
+	{
+		shortCanvas.width = width;
+		shortCanvas.height = height;
+	}
 
 	var shortFuzzyElements = makeFuzzyFelt(shortCanvas, fuzzyViewData, names, sortedTasks, true, dateStart, numWeeks);
 	myLog("short: " + width + " x " + height);
@@ -1029,8 +1038,11 @@ function makeFuzzyFelts(planStartDate, names, sortedTasks)
 		width = fuzzyViewData.m_cellWidth * numWeeks + fuzzyViewData.m_weekX + widthExtra;
 		height = names.length * fuzzyViewData.m_cellHeight + fuzzyViewData.m_weekY + heightExtra;
 	}
-	mediumCanvas.width = width;
-	mediumCanvas.height = height;
+	if (mediumCanvas != null)
+	{
+		mediumCanvas.width = width;
+		mediumCanvas.height = height;
+	}
 	myLog("medium: " + width + " x " + height);
 
 	var mediumFuzzyElements = makeFuzzyFelt(mediumCanvas, fuzzyViewData, names, sortedTasks, false, dateStart, numWeeks);
@@ -1050,8 +1062,11 @@ function makeFuzzyFelts(planStartDate, names, sortedTasks)
 		height = names.length * fuzzyViewData.m_cellHeight + fuzzyViewData.m_weekY + heightExtra;
 	}
 
-	longCanvas.width = width;
-	longCanvas.height = height;
+	if (longCanvas != null)
+	{
+		longCanvas.width = width;
+		longCanvas.height = height;
+	}
 	myLog("long: " + width + " x " + height);
 
 	var longFuzzyElements = makeFuzzyFelt(longCanvas, fuzzyViewData, names, sortedTasks, false, dateStart, numWeeks);
