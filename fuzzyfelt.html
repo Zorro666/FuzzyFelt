@@ -15,17 +15,17 @@
 
 	<div>
 		<h1>Short Term Tasks</h1>
-		<canvas id="canvas_short" width=1300 height=2800" />
+		<canvas id="canvas_short" width=0 height=0" />
 	</div>
 
 	<div>
 		<h1>Medium Term Tasks</h1>
-		<canvas id="canvas_medium" width=3500 height=2800" />
+		<canvas id="canvas_medium" width=0 height=0" />
 	</div>
 
 	<div>
 		<h1>Long Term Tasks</h1>
-		<canvas id="canvas_long" width=9300 height=2800" />
+		<canvas id="canvas_long" width=0 height=0" />
 	</div>
 
 <script type="text/javascript">
@@ -159,16 +159,72 @@ function FuzzyViewData(cellWidth, cellHeight, nameX, weekX, weekY)
 	this.m_weekY = weekY;
 }
 
+function getMonthIndex(monthName)
+{
+	for (var m = 0; m < monthNames.length; m++)
+	{
+		if (monthNames[m] == monthName)
+		{
+			return m;
+		}
+	}
+	return -1;
+}
+
 function addDates(startDate, deltaDays)
 {
 	var dateBits = startDate.split("/");
 	var weekDay = parseInt(dateBits[0]);
-	var weekMonth = parseInt(dateBits[1])-1;
+	var weekMonth = parseInt(dateBits[1]) - 1;
 	var weekYear = parseInt(dateBits[2]);
 	weekDay += deltaDays;
 	var date = new Date(weekYear, weekMonth, weekDay);
-	var endDate = date.getDate()+"/"+(date.getMonth()+1)+"/"+date.getFullYear();
+	var endDate = date.getDate()+"/"+(date.getMonth() + 1)+"/"+date.getFullYear();
 	return endDate;
+}
+
+function computeNumWeeksToShow(startDate, numWeeks, selectedMonth)
+{
+	var deltaDays = numWeeks*7;
+	var endDate = addDates(startDate, deltaDays);
+
+	var dateBits = startDate.split("/");
+	var weekDay = parseInt(dateBits[0]) + 5;
+	var weekMonth = parseInt(dateBits[1]) - 1;
+	var weekYear = parseInt(dateBits[2]);
+
+	var dateStart = new Date(weekYear, weekMonth, weekDay);
+	dateBits = endDate.split("/");
+	var weekDay = parseInt(dateBits[0]) + 5;
+	var weekMonth = parseInt(dateBits[1]) - 1;
+	var weekYear = parseInt(dateBits[2]);
+	var dateEnd = new Date(weekYear, weekMonth, weekDay);
+
+	var startMonth = dateStart.getMonth();
+	var endMonth = dateEnd.getMonth();
+
+	if (selectedMonth != "")
+	{
+		numWeeks = 0;
+	}
+	myLog("startMonth:"+startMonth+" endMonth:"+endMonth);
+	if (endMonth < startMonth)
+	{
+		endMonth += 12;
+	}
+	for (m = startMonth; m < endMonth; m++)
+	{
+		var month = m % 12;
+		var monthName = monthNames[month];
+		if (monthName == selectedMonth)
+		{
+			myLog("Found it");
+			numWeeks = 4;
+			return numWeeks;
+		}
+	}
+
+	return numWeeks;
 }
 
 function makeSortedTasks(tasks, startDate)
@@ -178,7 +234,7 @@ function makeSortedTasks(tasks, startDate)
 	var weekDay = parseInt(dateBits[0]);
 	var weekMonth = parseInt(dateBits[1]);
 	var weekYear = parseInt(dateBits[2]);
-	var planStartDate = new Date(weekYear, weekMonth-1, weekDay);
+	var planStartDate = new Date(weekYear, weekMonth - 1, weekDay);
 
 	var ownerCurrentEnds = new Object();
 	for (var i = 0; i < tasks.length; i++)
@@ -226,7 +282,7 @@ function getLines(ctx,phrase,maxPxLength)
 			phraseArray.push(lastPhrase);
 			lastPhrase = w;
 		}
-		if (i === wa.length-1)
+		if (i === wa.length - 1)
 		{
 			phraseArray.push(lastPhrase);
 			break;
@@ -292,7 +348,7 @@ function drawLegendShort(ctx, legendX, legendY, legendWidth, legendHeight)
 {
 	var x = legendX;
 	var w = legendWidth - 10;
-	var h = legendHeight -10;
+	var h = legendHeight - 10;
 
 	x += (10/2);
 	y = legendY;
@@ -307,13 +363,15 @@ function drawLegendShort(ctx, legendX, legendY, legendWidth, legendHeight)
 	y += legendHeight;
 	drawFuzzyFeltElement(ctx, "Task Completed", x, y, w, h, boxColours[TASK_DONE]);
 	y += legendHeight;
+	drawFuzzyFeltElement(ctx, "Holiday", x, y, w, h, boxColours[HOLIDAY]);
+	y += legendHeight;
 }
 
 function drawLegendFuture(ctx, legendX, legendY, legendWidth, legendHeight)
 {
 	var x = legendX;
 	var w = legendWidth - 10;
-	var h = legendHeight -10;
+	var h = legendHeight - 10;
 
 	x += (10/2);
 	y = legendY;
@@ -325,6 +383,8 @@ function drawLegendFuture(ctx, legendX, legendY, legendWidth, legendHeight)
 	drawFuzzyFeltElement(ctx, "Low Priority", x, y, w, h, boxColours[LOW_PRIORITY]);
 	y += legendHeight;
 	drawFuzzyFeltElement(ctx, "Task Details Unknown", x, y, w, h, boxColours[TASK_UNDEFINED]);
+	y += legendHeight;
+	drawFuzzyFeltElement(ctx, "Holiday", x, y, w, h, boxColours[HOLIDAY]);
 	y += legendHeight;
 }
 
@@ -397,10 +457,10 @@ function internalDrawFuzzyFeltElement(ctx, fuzzyFeltElement)
 	ctx.textAlign = 'center';
 	ctx.textBaseline = 'middle';
 	pxHeight = 18;
-	linesArray = getLines(ctx, text, w-15);
+	linesArray = getLines(ctx, text, w-  15);
 	numLines = linesArray.length;
 	textx = x+w/2;
-	texty = y+h/2-(((numLines-1)/2)*pxHeight);
+	texty = y+h/2-(((numLines - 1)/2)*pxHeight);
 	for (var i=0; i < numLines; i++)
 	{
 		line = linesArray[i];
@@ -423,6 +483,12 @@ function drawFuzzyFelt(canvasName, fuzzyFeltElements)
 
 function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateStart, numWeeks)
 {
+	var fuzzyFeltElements = []
+	if (numWeeks == 0)
+	{
+		return fuzzyFeltElements;
+	}
+
 	var ctx = canvas.getContext('2d');
 	ctx.font = 'bold 18px sans-serif';
 
@@ -435,9 +501,9 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 	const weekY = fuzzyData.m_weekY;
 
 	const numCols = numWeeks;
-	const numRows = numPeople+2;
+	const numRows = numPeople + 1;
 
-	const elementHeight = cellHeight-10;
+	const elementHeight = cellHeight - 10;
 
 	const weekWidth = cellWidth;
 
@@ -473,12 +539,12 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 	var weekDay = parseInt(dateBits[0]);
 	var weekMonth = parseInt(dateBits[1]);
 	var weekYear = parseInt(dateBits[2]);
-	const planStartDate = new Date(weekYear, weekMonth-1, weekDay);
+	const planStartDate = new Date(weekYear, weekMonth - 1, weekDay);
 
 	for (var w = 0; w < numWeeks; w++)
 	{
 		weekDateString = weekDay.toString()+"/"+weekMonth.toString()+"/"+weekYear.toString();
-		var fridayDate = new Date(weekYear, weekMonth-1, weekDay+5);
+		var fridayDate = new Date(weekYear, weekMonth - 1, weekDay + 5);
 		var fridayMonth = fridayDate.getMonth();
 		var title = monthNames[fridayMonth];
 		if (title != lastColourText)
@@ -497,9 +563,9 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 		drawTitle(ctx, weekDateString, w, titleX, weekDateY, titleWidth, titleHeight, titleBGcolour);
 
 		weekDay += 7
-		var weekStart = new Date(weekYear, weekMonth-1, weekDay);
+		var weekStart = new Date(weekYear, weekMonth - 1, weekDay);
 		weekDay = weekStart.getDate();
-		weekMonth = weekStart.getMonth()+1;
+		weekMonth = weekStart.getMonth() + 1;
 		weekYear = weekStart.getFullYear();
 	}
 
@@ -533,8 +599,6 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 		drawLegendFuture(ctx, legendX, legendY, legendWidth, legendHeight);
 	}
 
-	var fuzzyFeltElements = []
-
 	// Draw the fuzzy felt elements
 	for (var n = 0; n < numPeople; n++)
 	{
@@ -555,21 +619,28 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 					var duration = task.m_duration;
 					var taskStatus = task.m_taskStatus;
 
-					numWeeksForPerson += duration;
-					if (numWeeksForPerson > numWeeks)
-					{
-						duration -= (numWeeksForPerson-numWeeks);
-					}
 					if (startDate < planStartDate)
 					{
 						var deltaTime = planStartDate - startDate;
 						var weekDelta = deltaTime/(1000*60*60*24*7);
 						duration -= weekDelta;
-						numWeeksForPerson -= weekDelta;
+						if (duration <= 0)
+						{
+							alert("Illegal duration3: '"+text+"' "+duration+ " taskTime:"+task.m_duration+" weekDelta:"+weekDelta);
+						}
 					}
 					if (duration <= 0)
 					{
-						alert("Illegal duration"+text+" "+duration);
+						alert("Illegal duration1: '"+text+"' "+duration+ " taskTime:"+task.m_duration);
+					}
+					numWeeksForPerson += duration;
+					if (numWeeksForPerson > numWeeks)
+					{
+						duration -= (numWeeksForPerson-numWeeks);
+						if (duration <= 0)
+						{
+							alert("Illegal duration2: '"+text+"' "+duration+ " taskTime:"+task.m_duration);
+						}
 					}
 
 					var w = duration * weekWidth - 10;
@@ -601,6 +672,12 @@ function writeMessage(canvas, message)
 	context.fillStyle = 'black';
 	context.fillText(message, 10, 25);
 	myLog(message);
+}
+
+function infoMessage(message)
+{
+	var infoCanvas = document.getElementById("canvas_info");
+ 	writeMessage(infoCanvas, message);
 }
 
 function getMousePos(canvas, evt)
@@ -656,11 +733,10 @@ function mouseMove(evt)
 	if (mousePos.in == true)
 	{
  		var message = "Canvas:'" + inCanvas + "' Mouse position: " + mousePos.x + "," + mousePos.y;
-		var infoCanvas = document.getElementById("canvas_info");
- 		writeMessage(infoCanvas, message);
+ 		infoMessage(message);
 		var fuzzyElementName = canvas_name+".fuzzyElements";
 		var fuzzyElements = s_globalData[fuzzyElementName];
- 		writeMessage(infoCanvas, "MouseMove: "+canvas.id+" numFuzzys:"+fuzzyElements.length);
+ 		infoMessage("MouseMove: "+canvas.id+" numFuzzys:"+fuzzyElements.length);
 		var inFuzzyID = -1;
 		for (var i = 0; i < fuzzyElements.length; i++)
 		{
@@ -702,7 +778,7 @@ function mouseMove(evt)
 				unhilite = true;
 				var ctx = canvas.getContext('2d');
 				var element = fuzzyElements[inFuzzyID];
-				writeMessage(infoCanvas, "In:"+inFuzzyID+" text:"+element.m_text);
+				infoMessage("In:"+inFuzzyID+" text:"+element.m_text);
 				var hilite = new FuzzyFeltElement();
 				hilite.m_x = element.m_x;
 				hilite.m_y = element.m_y;
@@ -746,9 +822,13 @@ var s_globalData = new Object();
 
 window.onload = function()
 {
+	fuzzyInit();
+}
+
+function fuzzyInit()
+{
 	s_globalData["mouseover.canvas"] = "";
 	s_globalData["mouseover.id"] = -1;
-
 	window.addEventListener('mousemove', mouseMove, false);
 
 	var resourceNames = [
@@ -776,21 +856,126 @@ window.onload = function()
 	];
 
 	var resourceTasks = [
-		new TaskItem("P1", "XX: make it rock", 1, TASK_DONE),
-		new TaskItem("P2", "YY: make it rain", 1, TASK_DONE),
+		new TaskItem("P1", "AA: make it rock", 1, TASK_DONE),
+		new TaskItem("P1", "BB: make it rain", 2, HIGH_PRIORITY),
+		new TaskItem("P1", "CC: make it snow", 3, MEDIUM_PRIORITY),
+		new TaskItem("P1", "DD: make it hail", 4, LOW_PRIORITY),
+		new TaskItem("P1", "EE: make it shine", 5, HOLIDAY),
+		new TaskItem("P1", "FF: make it so", 6, TASK_UNDEFINED),
+		new TaskItem("P1", "GG: make it so so", 7, HIGH_RISK),
+		new TaskItem("P2", "GG: make it rock", 7, TASK_DONE),
+		new TaskItem("P2", "FF: make it rain", 6, HIGH_PRIORITY),
+		new TaskItem("P2", "EE: make it snow", 5, MEDIUM_PRIORITY),
+		new TaskItem("P2", "DD: make it hail", 4, LOW_PRIORITY),
+		new TaskItem("P2", "CC: make it shine", 3, HOLIDAY),
+		new TaskItem("P2", "BB: make it so", 2, TASK_UNDEFINED),
+		new TaskItem("P2", "AA: make it so so", 1, HIGH_RISK),
 	];
 
-	makeFuzzyFelts(resourceNames, resourceTasks);
+	const planStartDate = "31/10/2011";
+	var sortedTasks = makeSortedTasks(resourceTasks, planStartDate);
+
+	selectedNames = ["P1", "P2"];
+	selectedNames= [];
+	selectedMonth = "";
+	selectedMonth = "November";
+
+	s_globalData["fuzzy.selectedNames"] = selectedNames;
+	s_globalData["fuzzy.selectedMonth"] = selectedMonth;
+	s_globalData["fuzzy.resourceNames"] = resourceNames;
+	s_globalData["fuzzy.resourceTasks"] = resourceTasks;
+	s_globalData["fuzzy.sortedTasks"] = sortedTasks;
+	s_globalData["fuzzy.planStartDate"] = planStartDate;
+
+	doFuzzyFelts();
 }
 
-function makeFuzzyFelts(names, tasks)
+function doFuzzyFelts()
+{
+	var planStartDate = s_globalData["fuzzy.planStartDate"];
+	var resourceNames = s_globalData["fuzzy.resourceNames"];
+	var sortedTasks = s_globalData["fuzzy.sortedTasks"];
+
+	var selectedNames = s_globalData["fuzzy.selectedNames"];
+	var selectedMonth = s_globalData["fuzzy.selectedMonth"];
+
+	var names = [];
+	var tasks = [];
+	if (selectedNames.length > 0)
+	{
+		for (var s = 0; s < selectedNames.length; s++)
+		{
+			selectedName = selectedNames[s];
+			for (var n = 0; n < resourceNames.length; n++)
+			{
+				var name = resourceNames[n];
+				if (name == selectedName)
+				{
+					infoMessage("SelectedName: " + selectedName);
+					names.push(selectedName);
+				}
+			}
+		}
+	}
+	else
+	{
+		names = resourceNames;
+	}
+	if (selectedMonth != "")
+	{
+		var selectedMonthIndex = getMonthIndex(selectedMonth);
+		infoMessage("SelectedMonthIndex: " + selectedMonthIndex);
+		for (var t = 0; t < sortedTasks.length; t++)
+		{
+			var task = sortedTasks[t];
+			var name = task.m_owner;
+			var foundIt = true;
+			if (selectedNames.length > 0)
+			{
+				foundIt = false;
+				for (var s = 0; s < selectedNames.length; s++)
+				{
+					selectedName = selectedNames[s];
+					if (name == selectedName)
+					{
+						foundIt = true;
+						break;
+					}
+				}
+			}
+			if (foundIt == false)
+			{
+				continue;
+			}
+
+			var startDate = task.m_startDate;
+			var taskStartMonth = startDate.getMonth();
+
+			var endDate = task.m_endDate;
+			var taskEndMonth = endDate.getMonth();
+
+			if ((taskStartMonth <= selectedMonthIndex) && (taskEndMonth >= selectedMonthIndex))
+			{
+				infoMessage("SelectedMonth: " + selectedMonth);
+				infoMessage("addTask:"+task.m_title);
+				tasks.push(task);
+			}
+		}
+	}
+	else
+	{
+		tasks = sortedTasks;
+	}
+
+	makeFuzzyFelts(planStartDate, names, tasks);
+}
+
+function makeFuzzyFelts(planStartDate, names, sortedTasks)
 {
 	var shortCanvas = document.getElementById("canvas_short");
 	var mediumCanvas = document.getElementById("canvas_medium");
 	var longCanvas = document.getElementById("canvas_long");
-
-	const planStartDate = "31/10/2011";
-	var sortedTasks = makeSortedTasks(tasks, planStartDate);
+	var selectedMonth = s_globalData["fuzzy.selectedMonth"];
 
 	const cellWidth = 250;
 	const cellHeight = 120;
@@ -799,19 +984,67 @@ function makeFuzzyFelts(names, tasks)
 	const weekY = cellHeight;
 	const shortDateStart = planStartDate;
 	const shortNumWeeks = 4;
+	const widthExtra = 50;
+	const heightExtra = 00;
 
 	var fuzzyViewData = new FuzzyViewData(cellWidth, cellHeight, nameX, weekX, weekY);
-	var shortFuzzyElements = makeFuzzyFelt(shortCanvas, fuzzyViewData, names, sortedTasks, true, shortDateStart, shortNumWeeks);
+
+	numWeeks = computeNumWeeksToShow(shortDateStart, shortNumWeeks, selectedMonth);
+	dateStart = shortDateStart;
+
+	width = 0;
+	height = 0;
+	if (numWeeks > 0)
+	{
+		width = fuzzyViewData.m_cellWidth * numWeeks + fuzzyViewData.m_weekX + widthExtra;
+		height = names.length * fuzzyViewData.m_cellHeight + fuzzyViewData.m_weekY + heightExtra;
+	}
+	shortCanvas.width = width;
+	shortCanvas.height = height;
+
+	var shortFuzzyElements = makeFuzzyFelt(shortCanvas, fuzzyViewData, names, sortedTasks, true, dateStart, numWeeks);
+	myLog("short: " + width + " x " + height);
 
 	fuzzyViewData.m_cellWidth = 250;
 	const mediumDateStart = addDates(shortDateStart, shortNumWeeks*7);
 	const mediumNumWeeks = 13;
-	var mediumFuzzyElements = makeFuzzyFelt(mediumCanvas, fuzzyViewData, names, sortedTasks, false, mediumDateStart, mediumNumWeeks);
+
+	numWeeks = computeNumWeeksToShow(mediumDateStart, mediumNumWeeks, selectedMonth);
+	dateStart = mediumDateStart;
+
+	width = 0;
+	height = 0;
+	if (numWeeks > 0)
+	{
+		width = fuzzyViewData.m_cellWidth * numWeeks + fuzzyViewData.m_weekX + widthExtra;
+		height = names.length * fuzzyViewData.m_cellHeight + fuzzyViewData.m_weekY + heightExtra;
+	}
+	mediumCanvas.width = width;
+	mediumCanvas.height = height;
+	myLog("medium: " + width + " x " + height);
+
+	var mediumFuzzyElements = makeFuzzyFelt(mediumCanvas, fuzzyViewData, names, sortedTasks, false, dateStart, numWeeks);
 
 	fuzzyViewData.m_cellWidth = 250;
 	const longDateStart = addDates(mediumDateStart, mediumNumWeeks*7);
 	const longNumWeeks = 52-mediumNumWeeks-shortNumWeeks;
-	var longFuzzyElements = makeFuzzyFelt(longCanvas, fuzzyViewData, names, sortedTasks, false, longDateStart, longNumWeeks);
+
+	numWeeks = computeNumWeeksToShow(longDateStart, longNumWeeks, selectedMonth);
+	dateStart = longDateStart;
+
+	width = 0;
+	height = 0;
+	if (numWeeks > 0)
+	{
+		width = fuzzyViewData.m_cellWidth * numWeeks + fuzzyViewData.m_weekX + widthExtra;
+		height = names.length * fuzzyViewData.m_cellHeight + fuzzyViewData.m_weekY + heightExtra;
+	}
+
+	longCanvas.width = width;
+	longCanvas.height = height;
+	myLog("long: " + width + " x " + height);
+
+	var longFuzzyElements = makeFuzzyFelt(longCanvas, fuzzyViewData, names, sortedTasks, false, dateStart, numWeeks);
 
 	s_globalData["canvas_short.fuzzyElements"] = shortFuzzyElements;
 	s_globalData["canvas_medium.fuzzyElements"] = mediumFuzzyElements;
