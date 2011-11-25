@@ -1,7 +1,13 @@
 High
 * show selections of names
+* mouse handler: click on name to show/unshow
 * show selected month
+* mouse handler: click on month to show/unshow
 * keyboard handler to help with resetting selections
+* show selected month implement better - use real dates instead of month name
+** make numWeeks to show accurate when a month is selected
+** show the selected month correctly if it isn't first month in view
+** fixes year wrap bug
 ** f = full, s = short only, m = medium only, l =long only,
 ** n = network team, r = render team, c = ninja team, t = tools team
 
