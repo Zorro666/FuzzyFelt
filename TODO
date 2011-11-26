@@ -1,23 +1,16 @@
 High
-* show selections of names
-* mouse handler: click on name to show/unshow
-* show selected month
-* mouse handler: click on month to show/unshow
-* keyboard handler to help with resetting selections
-* show selected month implement better - use real dates instead of month name
-** make numWeeks to show accurate when a month is selected
+* put title in canvas not part of HTML page
+* draw range of dates: week, month, short, long, medium
 ** show the selected month correctly if it isn't first month in view
-** fixes year wrap bug
-** f = full, s = short only, m = medium only, l =long only,
+** fix year wrap bug
+* mouse handler: click on month to show/unshow
+* keyboard handler
 ** n = network team, r = render team, c = ninja team, t = tools team
 
 Medium
 * list of elements to draw should be EVERYTHING not just rectangles
-* interactivity support: make list of elements to draw, then draw them in render function
+* interactivity support: make list of elements to draw: legend+grid+months+dates
 * interactivity support: draw list of elements in render function
-* render single list of tasks into: short, medium, long lists
-* is it one list per canvas? 
-** yes - 1 rectangle list per canvas
 * locked 2 columns (legend+names)
 * locked 2 rows (month name+date)
 
@@ -25,7 +18,6 @@ Low
 * generate html web page from python
 * extend future term page: needs more real data
 
-* interactivity support: list of elements can be used for mouse click testing
 * dynamic web page: fixed size canvas (smaller than required display)
 * dynamic web page: pan
 * dynamic web page: zoom
