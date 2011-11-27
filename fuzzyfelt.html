@@ -790,6 +790,20 @@ function keyUp(evt)
 			doFuzzyFelts();
 			break;
 		}
+		case 67: // 'c'
+		{
+			infoMessage("Pressed 'c'");
+			if (s_globalData["fuzzy.selectedNames"] == s_globalData["fuzzy.selectedNames_c"])
+			{
+				s_globalData["fuzzy.selectedNames"] = [];
+			}
+			else
+			{
+				s_globalData["fuzzy.selectedNames"] = s_globalData["fuzzy.selectedNames_c"];
+			}
+			doFuzzyFelts();
+			break;
+		}
 		case 70: // 'f'
 		{
 			infoMessage("Pressed 'f'");
@@ -826,13 +840,29 @@ function keyUp(evt)
 		case 78: // 'n'
 		{
 			infoMessage("Pressed 'n'");
+			if (s_globalData["fuzzy.selectedNames"] == s_globalData["fuzzy.selectedNames_n"])
+			{
+				s_globalData["fuzzy.selectedNames"] = [];
+			}
+			else
+			{
+				s_globalData["fuzzy.selectedNames"] = s_globalData["fuzzy.selectedNames_n"];
+			}
+			doFuzzyFelts();
 			break;
 		}
 		case 82: // 'r'
 		{
 			infoMessage("Pressed 'r'");
-			//s_globalData["fuzzy.selectedNames"] = [];
-			//doFuzzyFelts();
+			if (s_globalData["fuzzy.selectedNames"] == s_globalData["fuzzy.selectedNames_r"])
+			{
+				s_globalData["fuzzy.selectedNames"] = [];
+			}
+			else
+			{
+				s_globalData["fuzzy.selectedNames"] = s_globalData["fuzzy.selectedNames_r"];
+			}
+			doFuzzyFelts();
 			break;
 		}
 		case 83: // 's'
@@ -842,6 +872,20 @@ function keyUp(evt)
 			s_globalData["fuzzy.drawMedium"] = false;
 			s_globalData["fuzzy.drawLong"] = false;
 			s_globalData["fuzzy.showSelectedDates"] = false;
+			doFuzzyFelts();
+			break;
+		}
+		case 84: // 't'
+		{
+			infoMessage("Pressed 't'");
+			if (s_globalData["fuzzy.selectedNames"] == s_globalData["fuzzy.selectedNames_t"])
+			{
+				s_globalData["fuzzy.selectedNames"] = [];
+			}
+			else
+			{
+				s_globalData["fuzzy.selectedNames"] = s_globalData["fuzzy.selectedNames_t"];
+			}
 			doFuzzyFelts();
 			break;
 		}
@@ -1151,6 +1195,10 @@ function fuzzyInit()
 	s_globalData["fuzzy.resourceTasks"] = resourceTasks;
 	s_globalData["fuzzy.sortedTasks"] = sortedTasks;
 	s_globalData["fuzzy.fullPlanStartDate"] = planStartDate;
+	s_globalData["fuzzy.selectedNames_n"] = ["P1", "P2", "P3", "P4", "P5"];
+	s_globalData["fuzzy.selectedNames_r"] = ["P6", "P7", "P8", "P9", "P10"];
+	s_globalData["fuzzy.selectedNames_t"] = ["P11", "P12", "P13", "P14", "P15"];
+	s_globalData["fuzzy.selectedNames_c"] = ["P16", "P17", "P18", "P19", "P20"];
 
 	drawFullView();
 }
