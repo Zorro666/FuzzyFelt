@@ -10,7 +10,7 @@ High
 Medium
 * put title in canvas not part of HTML page
 * list of elements to draw should be EVERYTHING not just rectangles
-* interactivity support: make list of elements to draw: legend+grid+months+dates
+* interactivity support: make list of elements to draw: legend+grid
 * interactivity support: draw list of elements in render function
 * locked 2 columns (legend+names)
 * locked 2 rows (month name+date)
