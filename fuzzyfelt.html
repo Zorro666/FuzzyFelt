@@ -95,6 +95,8 @@ const TASK_DONE = 7;
 const HOLIDAY = 8;
 
 const TYPE_NAME = "NAME";
+const TYPE_MONTH = "MONTH";
+const TYPE_WEEK = "WEEK";
 const TYPE_LEGEND = "LEGEND";
 const TYPE_FUZZY = "FUZZY";
 
@@ -417,24 +419,28 @@ function drawCellText(ctx, text, x0, y0, w, h, bgColour)
 	ctx.fillText(text, xc, yc);
 }
 
-function drawTitle(ctx, title, n, titleX, titleY, titleWidth, titleHeight, bgColour)
+function addMonth(title, n, titleX, titleY, w, h, bgColour)
 {
-	var x0 = titleX + n * titleWidth;
+	var x0 = titleX + n * w;
 	var y0 = titleY;
-	drawCellText(ctx, title, x0, y0, titleWidth, titleHeight, bgColour);
+	var monthElement = new FuzzyFeltElement(title, x0, y0, w, h, bgColour, TYPE_MONTH);
+	return monthElement;
 }
 
-function addName(name, n, nameX, nameY, nameWidth, nameHeight, bgColour)
+function addWeek(title, n, titleX, titleY, w, h, bgColour)
+{
+	var x0 = titleX + n * w;
+	var y0 = titleY;
+	var weekElement = new FuzzyFeltElement(title, x0, y0, w, h, bgColour, TYPE_WEEK);
+	return weekElement;
+}
+
+function addName(name, n, nameX, nameY, w, h, bgColour)
 {
 	var x0 = nameX;
-	var y0 = nameY + n * nameHeight;
-	nameElement = new FuzzyFeltElement(name, x0, y0, nameWidth, nameHeight, bgColour, TYPE_NAME);
+	var y0 = nameY + n * h;
+	var nameElement = new FuzzyFeltElement(name, x0, y0, w, h, bgColour, TYPE_NAME);
 	return nameElement;
-}
-
-function internalDrawNameElement(ctx, nameElement)
-{
-	internalDrawFuzzyFeltElement(ctx, nameElement);
 }
 
 function drawFuzzyFeltElement(ctx, text, x, y, w, h, boxColour, type)
@@ -482,7 +488,7 @@ function internalDrawFuzzyFeltElement(ctx, fuzzyFeltElement)
 	}
 }
 
-function drawFuzzyFelt(canvasName, fuzzyFeltElements, nameElements)
+function drawFuzzyFelt(canvasName, elements)
 {
 	var canvas = document.getElementById(canvasName);
 	if (canvas == null)
@@ -490,31 +496,24 @@ function drawFuzzyFelt(canvasName, fuzzyFeltElements, nameElements)
 		return
 	}
 	var ctx = canvas.getContext('2d');
-	//myLog("drawFuzzyFelt: elements:"+fuzzyFeltElements.length+" "+canvas.id);
-	for (var i = 0; i < fuzzyFeltElements.length; i++)
+	//myLog("drawFuzzyFelt: elements:"+elements.length+" "+canvas.id);
+	for (var i = 0; i < elements.length; i++)
 	{
-		var fuzzyFeltElement = fuzzyFeltElements[i];
-		internalDrawFuzzyFeltElement(ctx, fuzzyFeltElement);
-	}
-	//myLog("drawFuzzyFelt: names:"+nameElements.length+" "+canvas.id);
-	for (var i = 0; i < nameElements.length; i++)
-	{
-		var nameElement = nameElements[i];
-		internalDrawNameElement(ctx, nameElement);
+		var element = elements[i];
+		internalDrawFuzzyFeltElement(ctx, element);
 	}
 }
 
 function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateStart, numWeeks)
 {
-	var fuzzyFeltElements = []
-	var nameElements = []
+	var elements = [];
 	if (numWeeks == 0)
 	{
-		return fuzzyFeltElements;
+		return elements;
 	}
 	if (canvas == null)
 	{
-		return fuzzyFeltElements;
+		return elements;
 	}
 
 	var ctx = canvas.getContext('2d');
@@ -584,10 +583,12 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 			lastColourText = month;
 		}
 		var monthBGcolour = pastelColours[pastelColourIndex];
-		drawTitle(ctx, month, w, weekX, monthY, monthWidth, monthHeight, monthBGcolour);
+		monthElement = addMonth(month, w, weekX, monthY, monthWidth, monthHeight, monthBGcolour);
+		elements.push(monthElement);
 
 		// Draw week dates if wanted
-		drawTitle(ctx, weekDateString, w, weekX, weekY, monthWidth, monthHeight, monthBGcolour);
+		weekElement = addWeek(weekDateString, w, weekX, weekY, monthWidth, monthHeight, monthBGcolour);
+		elements.push(weekElement);
 
 		weekDay += 7
 		var weekStart = new Date(weekYear, weekMonth - 1, weekDay);
@@ -614,9 +615,8 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 		}
 		var nameBGcolour = pastelColours[pastelColourIndex];
 		nameElement = addName(name, n, nameX, nameY, nameWidth, nameHeight, nameBGcolour);
-		nameElements.push(nameElement);
+		elements.push(nameElement);
 	}
-	s_globalData[canvas.id+".nameElements"] = nameElements;
 
 	drawGrid(ctx, cellWidth, cellHeight, numRows+1, numCols, nameX, weekX);
 	if (shortTermPlan)
@@ -679,7 +679,7 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 					var boxColour = boxColours[taskStatus];
 
 					fuzzyFeltElement = new FuzzyFeltElement(text, x, y, w, h, boxColour, TYPE_FUZZY);
-					fuzzyFeltElements.push(fuzzyFeltElement);
+					elements.push(fuzzyFeltElement);
 
 					x0 += duration * cellWidth;
 				}
@@ -690,7 +690,7 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 			}
 		}
 	}
-	return fuzzyFeltElements;
+	return elements;
 }
 
 function writeMessage(canvas, message)
@@ -740,12 +740,12 @@ function getMousePos(canvas, evt)
 	return mousePos = { x: mouseX, y: mouseY, in: inCanvas };
 }
 
-function mouseInFuzzy(fuzzyElements, mousePos)
+function mouseInFuzzy(elements, mousePos)
 {
 	var inFuzzyID = -1;
-	for (var i = 0; i < fuzzyElements.length; i++)
+	for (var i = 0; i < elements.length; i++)
 	{
-		var element = fuzzyElements[i];
+		var element = elements[i];
 		var x = element.m_x;
 		if (mousePos.x < x)
 		{
@@ -803,6 +803,13 @@ function keyUp(evt)
 		{
 			infoMessage("Pressed 'f'");
 			drawFullView();
+			break;
+		}
+		case 74: // 'j'
+		{
+			infoMessage("Pressed 'j'");
+			s_globalData["fuzzy.selectedPlanNumWeeks"] += 1;
+			doFuzzyFelts();
 			break;
 		}
 		case 76: // 'l'
@@ -883,18 +890,18 @@ function mouseUp(evt)
 
 	var oldID = s_globalData["mouseover.id"];
 	var oldCanvas = s_globalData["mouseover.canvas"];
-	var oldFuzzyElementsName = s_globalData["mouseover.fuzzyElementsName"];
+	var oldElementsName = s_globalData["mouseover.elementsName"];
 	var unhilite = true;
 
 	var mousePos = hitResults.MousePos;
 	var inFuzzyID = hitResults.InFuzzyID;
-	var fuzzyElement = hitResults.FuzzyElement;
-	var fuzzyElementsName  = hitResults.FuzzyElementsName;
+	var element = hitResults.Element;
+	var elementsName  = hitResults.ElementsName;
 	if (inFuzzyID >= 0)
 	{
-		if (fuzzyElement.m_type == TYPE_NAME)
+		if (element.m_type == TYPE_NAME)
 		{
-			var selectedName = fuzzyElement.m_text;
+			var selectedName = element.m_text;
 			infoMessage("Clicked name:"+selectedName);
 
 			var selectedNames = [];
@@ -910,7 +917,7 @@ function mouseUp(evt)
 			}
 			if (selectedName != "")
 			{
-				selectedNames.push(fuzzyElement.m_text);
+				selectedNames.push(element.m_text);
 			}
 
 			s_globalData["fuzzy.selectedNames"] = selectedNames;
@@ -929,8 +936,8 @@ function doHitDetection(evt)
 	var inCanvas = "Short"
 	var canvas_name = "canvas_short";
 	var canvas = document.getElementById(canvas_name);
-	var fuzzyElement = null;
-	var fuzzyElementsName  = "";
+	var element = null;
+	var elementsName  = "";
 
 	var mousePos = getMousePos(canvas, evt);
 	if (mousePos.in == false)
@@ -952,28 +959,19 @@ function doHitDetection(evt)
  		var message = "Canvas:'" + inCanvas + "' Mouse position: " + mousePos.x + "," + mousePos.y;
  		//infoMessage(message);
 
-		fuzzyElementsName = canvas_name+".fuzzyElements";
-		var fuzzyElements = s_globalData[fuzzyElementsName];
- 		//infoMessage("MouseMove: "+canvas.id+" numFuzzys:"+fuzzyElements.length);
+		elementsName = canvas_name+".elements";
+		var elements = s_globalData[elementsName];
+ 		//infoMessage("MouseMove: "+canvas.id+" numElements:"+elements.length);
 
-		var inFuzzyID = mouseInFuzzy(fuzzyElements, mousePos);
-
+		var inFuzzyID = mouseInFuzzy(elements, mousePos);
 		if (inFuzzyID < 0)
 		{
-			fuzzyElementsName = canvas_name+".nameElements";
-			fuzzyElements = s_globalData[fuzzyElementsName];
- 			//infoMessage("MouseMove: "+canvas.id+" numFuzzys:"+fuzzyElements.length);
-			inFuzzyID = mouseInFuzzy(fuzzyElements, mousePos);
-		}
-
-		if (inFuzzyID < 0)
-		{
-			fuzzyElement = null;
-			fuzzyElementsName  = "";
+			element = null;
+			elementsName  = "";
 		}
 		else
 		{
-			fuzzyElement = fuzzyElements[inFuzzyID];
+			element = elements[inFuzzyID];
 		}
 	}
 
@@ -982,8 +980,8 @@ function doHitDetection(evt)
 					 	InCanvas: inCanvas, 
 					 	CanvasName: canvas_name, 
 					 	InFuzzyID: inFuzzyID, 
-					 	FuzzyElement: fuzzyElement, 
-					 	FuzzyElementsName: fuzzyElementsName
+					 	Element: element, 
+					 	ElementsName: elementsName
 				};
 }
 
@@ -996,35 +994,35 @@ function mouseMove(evt)
 
 	var oldID = s_globalData["mouseover.id"];
 	var oldCanvas = s_globalData["mouseover.canvas"];
-	var oldFuzzyElementsName = s_globalData["mouseover.fuzzyElementsName"];
+	var oldElementsName = s_globalData["mouseover.elementsName"];
 	var unhilite = true;
 
 	var mousePos = hitResults.MousePos;
 	var inFuzzyID = hitResults.InFuzzyID;
-	var fuzzyElement = hitResults.FuzzyElement;
-	var fuzzyElementsName  = hitResults.FuzzyElementsName;
+	var element = hitResults.Element;
+	var elementsName  = hitResults.ElementsName;
 	if (inFuzzyID >= 0)
 	{
 		unhilite = false;
-		if ((inFuzzyID != oldID) || (canvas_name != oldCanvas) || (fuzzyElementsName != oldFuzzyElementsName))
+		if ((inFuzzyID != oldID) || (canvas_name != oldCanvas) || (elementsName != oldElementsName))
 		{
 			unhilite = true;
 			var ctx = canvas.getContext('2d');
-			//infoMessage("In:"+inFuzzyID+" text:"+fuzzyElement.m_text);
+			//infoMessage("In:"+inFuzzyID+" text:"+element.m_text);
 			var hilite = new FuzzyFeltElement();
-			hilite.m_x = fuzzyElement.m_x;
-			hilite.m_y = fuzzyElement.m_y;
-			hilite.m_w = fuzzyElement.m_w;
-			hilite.m_h = fuzzyElement.m_h;
-			hilite.m_text = fuzzyElement.m_text;
-			hilite.m_boxColour = fuzzyElement.m_boxColour;
-			hilite.m_type = fuzzyElement.m_type;
+			hilite.m_x = element.m_x;
+			hilite.m_y = element.m_y;
+			hilite.m_w = element.m_w;
+			hilite.m_h = element.m_h;
+			hilite.m_text = element.m_text;
+			hilite.m_boxColour = element.m_boxColour;
+			hilite.m_type = element.m_type;
 			hilite.m_boxColour = "#FFFF66";
 			internalDrawFuzzyFeltElement(ctx, hilite);
 
 			s_globalData["mouseover.id"] = inFuzzyID;
 			s_globalData["mouseover.canvas"] = canvas_name;
-			s_globalData["mouseover.fuzzyElementsName"] = fuzzyElementsName;
+			s_globalData["mouseover.elementsName"] = elementsName;
 		}
 	}
 
@@ -1035,8 +1033,8 @@ function mouseMove(evt)
 		{
 			canvas = document.getElementById(oldCanvas);
 			var ctx = canvas.getContext('2d');
-			var oldFuzzyElements = s_globalData[oldFuzzyElementsName];
-			var oldElement = oldFuzzyElements[oldID];
+			var oldElements = s_globalData[oldElementsName];
+			var oldElement = oldElements[oldID];
 			if (oldElement != null)
 			{
 				internalDrawFuzzyFeltElement(ctx, oldElement);
@@ -1046,7 +1044,7 @@ function mouseMove(evt)
 		{
 			s_globalData["mouseover.id"] = -1;
 			s_globalData["mouseover.canvas"] = "";
-			s_globalData["oldFuzzyElementsName"] = "";
+			s_globalData["oldElementsName"] = "";
 		}
 	}
 } 
@@ -1139,6 +1137,7 @@ function resetSelections()
 	s_globalData["fuzzy.longOnly"] = true;
 	s_globalData["fuzzy.showSelectedDates"] = false;
 	s_globalData["fuzzy.selectedPlanStartDate"] = "";
+	s_globalData["fuzzy.selectedPlanNumWeeks"] = 1;
 
 	doFuzzyFelts();
 }
@@ -1205,9 +1204,9 @@ function makeFuzzyFelts(planStartDate, names, sortedTasks)
 	var drawMedium = s_globalData["fuzzy.mediumOnly"];
 	var drawLong = s_globalData["fuzzy.longOnly"];
 
-	var shortFuzzyElements = [];
-	var mediumFuzzyElements = [];
-	var longFuzzyElements = [];
+	var shortElements = [];
+	var mediumElements = [];
+	var longElements = [];
 
 	if (shortCanvas != null)
 	{
@@ -1229,8 +1228,14 @@ function makeFuzzyFelts(planStartDate, names, sortedTasks)
 
 	var dateStart = planStartDate;
 
-	const shortNumWeeks = 4;
+	var shortNumWeeks = 4;
 	const shortDateStart = planStartDate;
+
+	var showSelectedDates = s_globalData["fuzzy.showSelectedDates"];
+	if (showSelectedDates == true)
+	{
+		shortNumWeeks = s_globalData["fuzzy.selectedPlanNumWeeks"];
+	}
 	if (drawShort)
 	{
 		numWeeks = computeNumWeeksToShow(shortDateStart, shortNumWeeks);
@@ -1248,7 +1253,7 @@ function makeFuzzyFelts(planStartDate, names, sortedTasks)
 			shortCanvas.height = height;
 		}
 
-		shortFuzzyElements = makeFuzzyFelt(shortCanvas, fuzzyViewData, names, sortedTasks, true, dateStart, numWeeks);
+		shortElements = makeFuzzyFelt(shortCanvas, fuzzyViewData, names, sortedTasks, true, dateStart, numWeeks);
 		//myLog("short: " + width + " x " + height);
 	}
 
@@ -1275,7 +1280,7 @@ function makeFuzzyFelts(planStartDate, names, sortedTasks)
 		}
 		//myLog("medium: " + width + " x " + height);
 
-		mediumFuzzyElements = makeFuzzyFelt(mediumCanvas, fuzzyViewData, names, sortedTasks, false, dateStart, numWeeks);
+		mediumElements = makeFuzzyFelt(mediumCanvas, fuzzyViewData, names, sortedTasks, false, dateStart, numWeeks);
 	}
 
 	const longNumWeeks = 52-mediumNumWeeks-shortNumWeeks;
@@ -1302,12 +1307,12 @@ function makeFuzzyFelts(planStartDate, names, sortedTasks)
 		}
 		//myLog("long: " + width + " x " + height);
 
-		longFuzzyElements = makeFuzzyFelt(longCanvas, fuzzyViewData, names, sortedTasks, false, dateStart, numWeeks);
+		longElements = makeFuzzyFelt(longCanvas, fuzzyViewData, names, sortedTasks, false, dateStart, numWeeks);
 	}
 
-	s_globalData["canvas_short.fuzzyElements"] = shortFuzzyElements;
-	s_globalData["canvas_medium.fuzzyElements"] = mediumFuzzyElements;
-	s_globalData["canvas_long.fuzzyElements"] = longFuzzyElements;
+	s_globalData["canvas_short.elements"] = shortElements;
+	s_globalData["canvas_medium.elements"] = mediumElements;
+	s_globalData["canvas_long.elements"] = longElements;
 
 	render();
 }
@@ -1315,10 +1320,6 @@ function makeFuzzyFelts(planStartDate, names, sortedTasks)
 function render()
 {
 	var canvas_name = "";
-	var fuzzyElementsName ="";
-	var fuzzyElements = [];
-	var nameElementsName ="";
-	var nameElements = [];
 
 	var drawShort = s_globalData["fuzzy.shortOnly"];
 	var drawMedium = s_globalData["fuzzy.mediumOnly"];
@@ -1327,42 +1328,30 @@ function render()
 	if (drawShort)
 	{
 		canvas_name = "canvas_short";
-
-		fuzzyElementsName = canvas_name+".fuzzyElements";
-		fuzzyElements = s_globalData[fuzzyElementsName];
-
-		nameElementsName = canvas_name+".nameElements";
-		nameElements = s_globalData[nameElementsName];
-
-		drawFuzzyFelt(canvas_name, fuzzyElements, nameElements);
+		renderView(canvas_name);
 	}
 
 	if (drawMedium)
 	{
 		canvas_name = "canvas_medium";
-
-		fuzzyElementsName = canvas_name+".fuzzyElements";
-		fuzzyElements = s_globalData[fuzzyElementsName];
-
-		nameElementsName = canvas_name+".nameElements";
-		nameElements = s_globalData[nameElementsName];
-
-		drawFuzzyFelt(canvas_name, fuzzyElements, nameElements);
+		renderView(canvas_name);
 	}
 
 	if (drawLong)
 	{
 		canvas_name = "canvas_long";
-
-		fuzzyElementsName = canvas_name+".fuzzyElements";
-		fuzzyElements = s_globalData[fuzzyElementsName];
-
-		nameElementsName = canvas_name+".nameElements";
-		nameElements = s_globalData[nameElementsName];
-
-		drawFuzzyFelt(canvas_name, fuzzyElements, nameElements);
+		renderView(canvas_name);
 	}
 }
+
+function renderView(canvas_name)
+{
+	var elementsName = canvas_name+".elements";
+	var elements = s_globalData[elementsName];
+
+	drawFuzzyFelt(canvas_name, elements);
+}
+
 
 </script>
 </div>
