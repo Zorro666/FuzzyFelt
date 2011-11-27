@@ -1326,6 +1326,11 @@ function makeFuzzyFelts(planStartDate, names, sortedTasks)
 		{
 			width = fuzzyViewData.m_cellWidth * numWeeks + fuzzyViewData.m_weekX + widthExtra;
 			height = (names.length+1) * fuzzyViewData.m_cellHeight + fuzzyViewData.m_weekY + heightExtra;
+			var minWidth = fuzzyViewData.m_cellWidth * 3 + fuzzyViewData.m_weekX + widthExtra;
+			if (width < minWidth)
+			{
+				width = minWidth;
+			}
 		}
 		if (shortCanvas != null)
 		{
@@ -1352,6 +1357,11 @@ function makeFuzzyFelts(planStartDate, names, sortedTasks)
 		{
 			width = fuzzyViewData.m_cellWidth * numWeeks + fuzzyViewData.m_weekX + widthExtra;
 			height = (names.length+1) * fuzzyViewData.m_cellHeight + fuzzyViewData.m_weekY + heightExtra;
+			var minWidth = fuzzyViewData.m_cellWidth * 3 + fuzzyViewData.m_weekX + widthExtra;
+			if (width < minWidth)
+			{
+				width = minWidth;
+			}
 		}
 		if (mediumCanvas != null)
 		{
@@ -1378,6 +1388,11 @@ function makeFuzzyFelts(planStartDate, names, sortedTasks)
 		{
 			width = fuzzyViewData.m_cellWidth * numWeeks + fuzzyViewData.m_weekX + widthExtra;
 			height = (names.length+1) * fuzzyViewData.m_cellHeight + fuzzyViewData.m_weekY + heightExtra;
+			var minWidth = fuzzyViewData.m_cellWidth * 3 + fuzzyViewData.m_weekX + widthExtra;
+			if (width < minWidth)
+			{
+				width = minWidth;
+			}
 		}
 
 		if (longCanvas != null)
