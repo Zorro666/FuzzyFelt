@@ -1,13 +1,14 @@
 High
-* put title in canvas not part of HTML page
-* draw range of dates: week, month, short, long, medium
+* draw range of dates: selectedStartDate + numberOfWeeks
 ** show the selected month correctly if it isn't first month in view
 ** fix year wrap bug
 * mouse handler: click on month to show/unshow
+* mouse handler: click on week to show/unshow
 * keyboard handler
-** n = network team, r = render team, c = ninja team, t = tools team
+** n = network team, r = render team, j = ninja team, t = tools team
 
 Medium
+* put title in canvas not part of HTML page
 * list of elements to draw should be EVERYTHING not just rectangles
 * interactivity support: make list of elements to draw: legend+grid+months+dates
 * interactivity support: draw list of elements in render function
