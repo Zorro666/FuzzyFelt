@@ -1,8 +1,4 @@
 High
-* mouse handler: click on month to show/unshow
-** need to compute duration of each month correctly e.g. not hard code to 4
-* keyboard handler
-** n = network team, r = render team, j = ninja team, t = tools team
 
 Medium
 * put title in canvas not part of HTML page
