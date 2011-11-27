@@ -1,9 +1,6 @@
 High
-* draw range of dates: selectedStartDate + numberOfWeeks
-** show the selected month correctly if it isn't first month in view
-** fix year wrap bug
 * mouse handler: click on month to show/unshow
-* mouse handler: click on week to show/unshow
+** need to compute duration of each month correctly e.g. not hard code to 4
 * keyboard handler
 ** n = network team, r = render team, j = ninja team, t = tools team
 
