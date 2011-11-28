@@ -1145,6 +1145,11 @@ function fuzzyInit()
 	window.addEventListener('keydown', keyDown, true);
 	window.addEventListener('keyup', keyUp, true);
 
+	//////////////////////////////////////////////////////////////////////////
+	//
+	// START OF RESOURCE NAMES
+	//
+	//////////////////////////////////////////////////////////////////////////
 	var resourceNames = [
 		'P1',
 		'P2',
@@ -1168,7 +1173,17 @@ function fuzzyInit()
 		'P20',
 		'P21',
 	];
+	//////////////////////////////////////////////////////////////////////////
+	//
+	// END OF RESOURCE NAMES
+	//
+	//////////////////////////////////////////////////////////////////////////
 
+	//////////////////////////////////////////////////////////////////////////
+	//
+	// START OF RESOURCE TASKS
+	//
+	//////////////////////////////////////////////////////////////////////////
 	var resourceTasks = [
 		new TaskItem("P1", "AA: make it rock", 1, TASK_DONE),
 		new TaskItem("P1", "BB: make it rain", 2, HIGH_PRIORITY),
@@ -1185,8 +1200,28 @@ function fuzzyInit()
 		new TaskItem("P2", "BB: make it so", 2, TASK_UNDEFINED),
 		new TaskItem("P2", "AA: make it so so", 1, HIGH_RISK),
 	];
+	//////////////////////////////////////////////////////////////////////////
+	//
+	// END OF RESOURCE TASKS
+	//
+	//////////////////////////////////////////////////////////////////////////
 
-	const planStartDate = "31/10/2011";
+	//////////////////////////////////////////////////////////////////////////
+	//
+	// START OF RESOURCE GROUPS
+	//
+	//////////////////////////////////////////////////////////////////////////
+	s_globalData["fuzzy.selectedNames_n"] = ["P1", "P2", "P3", "P4", "P5"];
+	s_globalData["fuzzy.selectedNames_r"] = ["P6", "P7", "P8", "P9", "P10"];
+	s_globalData["fuzzy.selectedNames_t"] = ["P11", "P12", "P13", "P14", "P15"];
+	s_globalData["fuzzy.selectedNames_c"] = ["P16", "P17", "P18", "P19", "P20"];
+	//////////////////////////////////////////////////////////////////////////
+	//
+	// END OF RESOURCE GROUPS
+	//
+	//////////////////////////////////////////////////////////////////////////
+
+	const planStartDate = "28/11/2011";
 	var sortedTasks = makeSortedTasks(resourceTasks, planStartDate);
 
 	var selectedNames= [];
@@ -1195,10 +1230,6 @@ function fuzzyInit()
 	s_globalData["fuzzy.resourceTasks"] = resourceTasks;
 	s_globalData["fuzzy.sortedTasks"] = sortedTasks;
 	s_globalData["fuzzy.fullPlanStartDate"] = planStartDate;
-	s_globalData["fuzzy.selectedNames_n"] = ["P1", "P2", "P3", "P4", "P5"];
-	s_globalData["fuzzy.selectedNames_r"] = ["P6", "P7", "P8", "P9", "P10"];
-	s_globalData["fuzzy.selectedNames_t"] = ["P11", "P12", "P13", "P14", "P15"];
-	s_globalData["fuzzy.selectedNames_c"] = ["P16", "P17", "P18", "P19", "P20"];
 
 	drawFullView();
 }
