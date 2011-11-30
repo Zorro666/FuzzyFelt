@@ -1,7 +1,10 @@
 High
+* display debug keys help
+* put title in canvas not part of HTML page
+* fix bug with length being wrong for sub-week tasks sometimes
 
 Medium
-* put title in canvas not part of HTML page
+* text wrap function - break on characters if a line is too long
 * list of elements to draw should be EVERYTHING not just rectangles
 * interactivity support: make list of elements to draw: legend+grid
 * interactivity support: draw list of elements in render function
@@ -9,16 +12,12 @@ Medium
 * locked 2 rows (month name+date)
 
 Low
-* generate html web page from python
-* extend future term page: needs more real data
-
 * dynamic web page: fixed size canvas (smaller than required display)
 * dynamic web page: pan
 * dynamic web page: zoom
 * sort tasks: handle priority
 * sort tasks: support for locked e.g. holiday or other known tasks
 * sort tasks: handle parent
-* text wrap function - break on characters if a line is too long
 * interactivity support: change priority on a task and see the update
 * interactivity support: filtering
 * interactivity support: edit task title
@@ -27,3 +26,4 @@ Low
 * interactivity support: edit task parent
 * interactivity support: create new task
 * interactivity support: change box width/height
+* generate html web page from python
