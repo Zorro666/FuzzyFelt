@@ -194,17 +194,17 @@ function addDates(startDate, deltaDays)
 
 function computeNumWeeksToShow(startDate, numWeeks)
 {
-	var deltaDays = numWeeks*7;
+	var deltaDays = numWeeks*7.0;
 	var endDate = addDates(startDate, deltaDays);
 
 	var dateBits = startDate.split("/");
-	var weekDay = parseInt(dateBits[0]) + 5;
+	var weekDay = parseInt(dateBits[0]) + 5.0;
 	var weekMonth = parseInt(dateBits[1]) - 1;
 	var weekYear = parseInt(dateBits[2]);
 
 	var dateStart = new Date(weekYear, weekMonth, weekDay);
 	dateBits = endDate.split("/");
-	var weekDay = parseInt(dateBits[0]) + 5;
+	var weekDay = parseInt(dateBits[0]) + 5.0;
 	var weekMonth = parseInt(dateBits[1]) - 1;
 	var weekYear = parseInt(dateBits[2]);
 	var dateEnd = new Date(weekYear, weekMonth, weekDay);
@@ -238,9 +238,14 @@ function makeSortedTasks(tasks, startDate)
 		var startDate = ownerCurrentEnds[owner];
 
 		var startDateDay = startDate.getDate();
-		var endDateDay = startDateDay + 7 * duration;
-		var endDate = new Date(startDate.getFullYear(), startDate.getMonth(), endDateDay);
+		var startDateHours = startDate.getHours();
+		var endDateDay = startDateDay + 7.0 * duration;
+		var deltaHours = (endDateDay - Math.floor(endDateDay))*24
+		var endDateHours = startDateHours + deltaHours;
+		myLog(i+" startDateDay:"+startDateDay+" endDateDay:"+endDateDay+" deltaHours:"+deltaHours);
+		var endDate = new Date(startDate.getFullYear(), startDate.getMonth(), Math.floor(endDateDay), endDateHours);
 		ownerCurrentEnds[owner] = endDate;
+		myLog(i+" endDate:"+endDate);
 
 		task.m_startDate = startDate;
 		task.m_endDate = endDate;
@@ -549,7 +554,7 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 	for (var w = 0; w < numWeeks; w++)
 	{
 		weekDateString = weekDay.toString()+"/"+weekMonth.toString()+"/"+weekYear.toString();
-		var fridayDate = new Date(weekYear, weekMonth - 1, weekDay + 5);
+		var fridayDate = new Date(weekYear, weekMonth - 1, weekDay + 5.0);
 		var fridayMonth = fridayDate.getMonth();
 		var month = monthNames[fridayMonth];
 		if (month != lastColourText)
@@ -579,7 +584,7 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 		weekElement.m_duration = 1;
 		elements.push(weekElement);
 
-		weekDay += 7
+		weekDay += 7.0
 		var weekStart = new Date(weekYear, weekMonth - 1, weekDay);
 		weekDay = weekStart.getDate();
 		weekMonth = weekStart.getMonth() + 1;
@@ -642,7 +647,7 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 					if (startDate < planStartDate)
 					{
 						var deltaTime = planStartDate - startDate;
-						var weekDelta = deltaTime/(1000*60*60*24*7);
+						var weekDelta = deltaTime/(1000.0*60.0*60.0*24.0*7.0);
 						duration -= weekDelta;
 						if (duration <= 0)
 						{
@@ -943,7 +948,7 @@ function keyUp(evt)
 				selectedPlanStartDate = s_globalData["fuzzy.fullPlanStartDate"];
 				s_globalData["fuzzy.showSelectedDates"] = true;
 			}
-			var newSelectedPlanStartDate = addDates(selectedPlanStartDate, 7);
+			var newSelectedPlanStartDate = addDates(selectedPlanStartDate, 7.0);
 			selectedPlanStartDate = newSelectedPlanStartDate;
 
 			s_globalData["fuzzy.selectedPlanStartDate"] = selectedPlanStartDate;
@@ -1230,16 +1235,17 @@ function fuzzyInit()
 	//
 	//////////////////////////////////////////////////////////////////////////
 	var resourceTasks = [
-		new TaskItem("P1", "AA: make it rock", 1, TASK_DONE),
-		new TaskItem("P1", "BB: make it rain", 2, HIGH_PRIORITY),
-		new TaskItem("P1", "CC: make it snow", 3, MEDIUM_PRIORITY),
-		new TaskItem("P1", "DD: make it hail", 4, LOW_PRIORITY),
-		new TaskItem("P1", "EE: make it shine", 5, HOLIDAY),
-		new TaskItem("P1", "FF: make it so", 6, TASK_UNDEFINED),
-		new TaskItem("P1", "GG: make it so so", 7, HIGH_RISK),
-		new TaskItem("P2", "GG: make it rock", 7, TASK_DONE),
-		new TaskItem("P2", "FF: make it rain", 6, HIGH_PRIORITY),
-		new TaskItem("P2", "EE: make it snow", 5, MEDIUM_PRIORITY),
+		new TaskItem("P1", "AA: make it rock", 0.5, TASK_DONE),
+		new TaskItem("P1", "CC: make it snow", 3.0, MEDIUM_PRIORITY),
+		new TaskItem("P1", "BB: make it rain", 0.5, HIGH_PRIORITY),
+		new TaskItem("P1", "CC: make it snow", 0.5, MEDIUM_PRIORITY),
+		new TaskItem("P1", "DD: make it hail", 0.5, LOW_PRIORITY),
+		new TaskItem("P1", "EE: make it shine", 0.5, HOLIDAY),
+		new TaskItem("P1", "FF: make it so", 0.5, TASK_UNDEFINED),
+		new TaskItem("P1", "GG: make it so so", 0.5, HIGH_RISK),
+		new TaskItem("P2", "GG: make it rock", 0.5, TASK_DONE),
+		new TaskItem("P2", "FF: make it rain", 0.5, HIGH_PRIORITY),
+		new TaskItem("P2", "EE: make it snow", 0.5, MEDIUM_PRIORITY),
 		new TaskItem("P2", "DD: make it hail", 4, LOW_PRIORITY),
 		new TaskItem("P2", "CC: make it shine", 3, HOLIDAY),
 		new TaskItem("P2", "BB: make it so", 2, TASK_UNDEFINED),
@@ -1575,7 +1581,7 @@ function makeFuzzyFelts(planStartDate, names, sortedTasks)
 	}
 
 	const mediumNumWeeks = 13;
-	const mediumDateStart = addDates(shortDateStart, (0+shortNumWeeks)*7);
+	const mediumDateStart = addDates(shortDateStart, (0+shortNumWeeks)*7.0);
 	if (drawMedium)
 	{
 		fuzzyViewData.m_cellWidth = 250;
@@ -1606,7 +1612,7 @@ function makeFuzzyFelts(planStartDate, names, sortedTasks)
 	}
 
 	const longNumWeeks = 52-mediumNumWeeks-shortNumWeeks;
-	const longDateStart = addDates(mediumDateStart, mediumNumWeeks*7);
+	const longDateStart = addDates(mediumDateStart, mediumNumWeeks*7.0);
 	if (drawLong)
 	{
 		fuzzyViewData.m_cellWidth = 250;
