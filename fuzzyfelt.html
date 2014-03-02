@@ -12,18 +12,8 @@
 	</div>
 
 	<div>
-		<h2>Short Term Tasks</h2>
+		<h2>Roadmap</h2>
 		<canvas id="canvas_short" width=0 height=0" />
-	</div>
-
-	<div>
-		<h2>Medium Term Tasks</h2>
-		<canvas id="canvas_medium" width=0 height=0" />
-	</div>
-
-	<div>
-		<h2>Long Term Tasks</h2>
-		<canvas id="canvas_long" width=0 height=0" />
 	</div>
 <!--
 -->
@@ -113,7 +103,7 @@ var boxColours = [
 ];
 
 var monthNames = [
-	"Janurary",
+	"January",
 	"February",
 	"March",
 	"April",
@@ -309,7 +299,7 @@ function drawRowLine(ctx, x, y, w)
 function drawGrid(ctx, cellWidth, cellHeight, numRows, numCols, nameX, weekX)
 {
 	var w = cellWidth*numCols + weekX;
-	var h = cellHeight*numRows -  cellHeight;
+	var h = cellHeight*numRows -  cellHeight - cellHeight/2;
 
 	// Draw the column lines
 	var x0 = 0;
@@ -333,14 +323,15 @@ function drawGrid(ctx, cellWidth, cellHeight, numRows, numCols, nameX, weekX)
 	x0 = 0;
 	y0 = 0;
 	drawRowLine(ctx, x0, y0, w);
+	drawRowLine(ctx, x0, y0+cellHeight/2, w);
 	drawRowLine(ctx, x0, y0+cellHeight, w);
-	y0 = cellHeight/2;
 	for (var i = 0; i < numRows; i++)
 	{
 		drawRowLine(ctx, x0, y0, w);
 		y0 += cellHeight;
 	}
-	drawRowLine(ctx, x0, y0, w);
+	//y0 -= cellHeight/2;
+	//drawRowLine(ctx, x0, y0, w);
 }
 
 function drawLegendShort(ctx, legendX, legendY, legendWidth, legendHeight)
@@ -509,7 +500,7 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 
 	const legendX = fuzzyData.m_weekX;
 	const legendY = 0;
-	const legendWidth = cellWidth/2-10;
+	const legendWidth = 200;
 	const legendHeight = cellHeight/2;
 
 	const nameX = fuzzyData.m_nameX;
@@ -520,7 +511,12 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 	const monthWidth = cellWidth;
 	const monthHeight = cellHeight/2;
 
-	const weekY = monthY + monthHeight;
+	var drawWeek = false;
+	var weekY = monthY;
+	if (drawWeek == true)
+	{
+		weekY += monthHeight;
+	}
 	const weekWidth = monthWidth;
 	const weekHeight = monthHeight;
 
@@ -550,6 +546,10 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 	var weekMonth = parseInt(dateBits[1]);
 	var weekYear = parseInt(dateBits[2]);
 	const planStartDate = new Date(weekYear, weekMonth - 1, weekDay);
+	var drawMonth = false;
+	var monthX0 = -1;
+	var monthY0 = -1;
+	var oldMonth = '';
 
 	for (var w = 0; w < numWeeks; w++)
 	{
@@ -557,33 +557,63 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 		var fridayDate = new Date(weekYear, weekMonth - 1, weekDay + 5.0);
 		var fridayMonth = fridayDate.getMonth();
 		var month = monthNames[fridayMonth];
-		if (month != lastColourText)
+		var monthBGcolour = pastelColours[pastelColourIndex];
+		var startMonth = false;
+		var drawMonth = false;
+		if (month != oldMonth)
 		{
-			pastelColourIndex++;
-			if (pastelColourIndex >= pastelColours.length)
+			if (oldMonth != '')
 			{
-				pastelColourIndex = 0;
+				drawMonth = true;
 			}
-			lastColourText = month;
+			startMonth = true;
+		}
+		if (w == numWeeks-1)
+		{
+			var x0 = monthX + w * monthWidth;
+			drawMonth = true;
+		}
+		if (drawMonth == true)
+		{
+			var width = x0 - monthX0 + monthWidth;
+			var monthElement = new FuzzyFeltElement(oldMonth, monthX0, monthY0, width, monthHeight, monthBGcolour, TYPE_MONTH);
+			monthElement.m_startDate = monthStartDate;
+			monthElement.m_duration = 4;
+			elements.push(monthElement);
+			myLog(oldMonth+":"+monthX0+":"+monthY0);
+		}
+		if (startMonth == true)
+		{
+			if (drawMonth == true)
+			{
+				pastelColourIndex++;
+				if (pastelColourIndex >= pastelColours.length)
+				{
+					pastelColourIndex = 0;
+				}
+			}
+
+			var monthBGcolour = pastelColours[pastelColourIndex];
+			oldMonth = month;
+
+			var x0 = monthX + w * monthWidth;
+			var y0 = monthY;
+			monthX0 = x0;
+			monthY0 = y0;
+
 			monthStartDate = weekDateString;
 		}
-		var monthBGcolour = pastelColours[pastelColourIndex];
-		var x0 = monthX + w * monthWidth;
-		var y0 = monthY;
-		var monthElement = new FuzzyFeltElement(month, x0, y0, monthWidth, monthHeight, monthBGcolour, TYPE_MONTH);
-		monthElement.m_startDate = monthStartDate;
-		//TODO: compute duration correctly
-		monthElement.m_duration = 4;
-		elements.push(monthElement);
 
-		// Draw week dates if wanted
 		x0 = weekX + w * weekWidth;
 		y0 = weekY;
-		var weekElement = new FuzzyFeltElement(weekDateString, x0, y0, weekWidth, weekHeight, monthBGcolour, TYPE_WEEK);
-		weekElement.m_startDate = weekDateString;
-		weekElement.m_duration = 1;
-		elements.push(weekElement);
-
+		if (drawWeek == true)
+		{
+			// Draw week dates if wanted
+			var weekElement = new FuzzyFeltElement(weekDateString, x0, y0, weekWidth, weekHeight, monthBGcolour, TYPE_WEEK);
+			weekElement.m_startDate = weekDateString;
+			weekElement.m_duration = 1;
+			elements.push(weekElement);
+		}
 		weekDay += 7.0
 		var weekStart = new Date(weekYear, weekMonth - 1, weekDay);
 		weekDay = weekStart.getDate();
@@ -840,20 +870,6 @@ function keyUp(evt)
 			selectedMoveNumWeeks(6);
 			break;
 		}
-		case 67: // 'c'
-		{
-			infoMessage("Pressed 'c'");
-			if (s_globalData["fuzzy.selectedNames"] == s_globalData["fuzzy.selectedNames_c"])
-			{
-				s_globalData["fuzzy.selectedNames"] = [];
-			}
-			else
-			{
-				s_globalData["fuzzy.selectedNames"] = s_globalData["fuzzy.selectedNames_c"];
-			}
-			doFuzzyFelts();
-			break;
-		}
 		case 70: // 'f'
 		{
 			infoMessage("Pressed 'f'");
@@ -887,34 +903,6 @@ function keyUp(evt)
 			doFuzzyFelts();
 			break;
 		}
-		case 78: // 'n'
-		{
-			infoMessage("Pressed 'n'");
-			if (s_globalData["fuzzy.selectedNames"] == s_globalData["fuzzy.selectedNames_n"])
-			{
-				s_globalData["fuzzy.selectedNames"] = [];
-			}
-			else
-			{
-				s_globalData["fuzzy.selectedNames"] = s_globalData["fuzzy.selectedNames_n"];
-			}
-			doFuzzyFelts();
-			break;
-		}
-		case 82: // 'r'
-		{
-			infoMessage("Pressed 'r'");
-			if (s_globalData["fuzzy.selectedNames"] == s_globalData["fuzzy.selectedNames_r"])
-			{
-				s_globalData["fuzzy.selectedNames"] = [];
-			}
-			else
-			{
-				s_globalData["fuzzy.selectedNames"] = s_globalData["fuzzy.selectedNames_r"];
-			}
-			doFuzzyFelts();
-			break;
-		}
 		case 83: // 's'
 		{
 			infoMessage("Pressed 's'");
@@ -925,16 +913,16 @@ function keyUp(evt)
 			doFuzzyFelts();
 			break;
 		}
-		case 84: // 't'
+		case 87: // 'w'
 		{
-			infoMessage("Pressed 't'");
-			if (s_globalData["fuzzy.selectedNames"] == s_globalData["fuzzy.selectedNames_t"])
+			infoMessage("Pressed 'w'");
+			if (s_globalData["fuzzy.selectedNames"] == s_globalData["fuzzy.selectedNames_w"])
 			{
 				s_globalData["fuzzy.selectedNames"] = [];
 			}
 			else
 			{
-				s_globalData["fuzzy.selectedNames"] = s_globalData["fuzzy.selectedNames_t"];
+				s_globalData["fuzzy.selectedNames"] = s_globalData["fuzzy.selectedNames_w"];
 			}
 			doFuzzyFelts();
 			break;
@@ -1204,24 +1192,6 @@ function fuzzyInit()
 		"P1",
 		"P2",
 		"P3",
-		"P4",
-		"P5",
-		"P6",
-		"P7",
-		"P8",
-		"P9",
-		"P10",
-		"P11",
-		"P12",
-		"P13",
-		"P14",
-		"P15",
-		"P16",
-		"P17",
-		"P18",
-		"P19",
-		"P20",
-		"P21",
 	];
 	//////////////////////////////////////////////////////////////////////////
 	//
@@ -1235,152 +1205,15 @@ function fuzzyInit()
 	//
 	//////////////////////////////////////////////////////////////////////////
 	var resourceTasks = [
-		new TaskItem("P1", "AA: make it rock", 0.5, TASK_DONE),
-		new TaskItem("P1", "CC: make it snow", 3.0, MEDIUM_PRIORITY),
-		new TaskItem("P1", "BB: make it rain", 0.5, HIGH_PRIORITY),
-		new TaskItem("P1", "CC: make it snow", 0.5, MEDIUM_PRIORITY),
-		new TaskItem("P1", "DD: make it hail", 0.5, LOW_PRIORITY),
-		new TaskItem("P1", "EE: make it shine", 0.5, HOLIDAY),
-		new TaskItem("P1", "FF: make it so", 0.5, TASK_UNDEFINED),
-		new TaskItem("P1", "GG: make it so so", 0.5, HIGH_RISK),
-		new TaskItem("P2", "GG: make it rock", 0.5, TASK_DONE),
-		new TaskItem("P2", "FF: make it rain", 0.5, HIGH_PRIORITY),
-		new TaskItem("P2", "EE: make it snow", 0.5, MEDIUM_PRIORITY),
-		new TaskItem("P2", "DD: make it hail", 4, LOW_PRIORITY),
-		new TaskItem("P2", "CC: make it shine", 3, HOLIDAY),
-		new TaskItem("P2", "BB: make it so", 2, TASK_UNDEFINED),
-		new TaskItem("P2", "AA: make it so so", 1, HIGH_RISK),
-		new TaskItem("P3", "GG: make it rock", 7, TASK_DONE),
-		new TaskItem("P3", "FF: make it rain", 6, HIGH_PRIORITY),
-		new TaskItem("P3", "EE: make it snow", 5, MEDIUM_PRIORITY),
-		new TaskItem("P3", "DD: make it hail", 4, LOW_PRIORITY),
-		new TaskItem("P3", "CC: make it shine", 3, HOLIDAY),
-		new TaskItem("P3", "BB: make it so", 2, TASK_UNDEFINED),
-		new TaskItem("P3", "AA: make it so so", 1, HIGH_RISK),
-		new TaskItem("P4", "GG: make it rock", 7, TASK_DONE),
-		new TaskItem("P4", "FF: make it rain", 6, HIGH_PRIORITY),
-		new TaskItem("P4", "EE: make it snow", 5, MEDIUM_PRIORITY),
-		new TaskItem("P4", "DD: make it hail", 4, LOW_PRIORITY),
-		new TaskItem("P4", "CC: make it shine", 3, HOLIDAY),
-		new TaskItem("P4", "BB: make it so", 2, TASK_UNDEFINED),
-		new TaskItem("P4", "AA: make it so so", 1, HIGH_RISK),
-		new TaskItem("P5", "GG: make it rock", 7, TASK_DONE),
-		new TaskItem("P5", "FF: make it rain", 6, HIGH_PRIORITY),
-		new TaskItem("P5", "EE: make it snow", 5, MEDIUM_PRIORITY),
-		new TaskItem("P5", "DD: make it hail", 4, LOW_PRIORITY),
-		new TaskItem("P5", "CC: make it shine", 3, HOLIDAY),
-		new TaskItem("P5", "BB: make it so", 2, TASK_UNDEFINED),
-		new TaskItem("P5", "AA: make it so so", 1, HIGH_RISK),
-		new TaskItem("P6", "GG: make it rock", 7, TASK_DONE),
-		new TaskItem("P6", "FF: make it rain", 6, HIGH_PRIORITY),
-		new TaskItem("P6", "EE: make it snow", 5, MEDIUM_PRIORITY),
-		new TaskItem("P6", "DD: make it hail", 4, LOW_PRIORITY),
-		new TaskItem("P6", "CC: make it shine", 3, HOLIDAY),
-		new TaskItem("P6", "BB: make it so", 2, TASK_UNDEFINED),
-		new TaskItem("P6", "AA: make it so so", 1, HIGH_RISK),
-		new TaskItem("P7", "GG: make it rock", 7, TASK_DONE),
-		new TaskItem("P7", "FF: make it rain", 6, HIGH_PRIORITY),
-		new TaskItem("P7", "EE: make it snow", 5, MEDIUM_PRIORITY),
-		new TaskItem("P7", "DD: make it hail", 4, LOW_PRIORITY),
-		new TaskItem("P7", "CC: make it shine", 3, HOLIDAY),
-		new TaskItem("P7", "BB: make it so", 2, TASK_UNDEFINED),
-		new TaskItem("P7", "AA: make it so so", 1, HIGH_RISK),
-		new TaskItem("P8", "GG: make it rock", 7, TASK_DONE),
-		new TaskItem("P8", "FF: make it rain", 6, HIGH_PRIORITY),
-		new TaskItem("P8", "EE: make it snow", 5, MEDIUM_PRIORITY),
-		new TaskItem("P8", "DD: make it hail", 4, LOW_PRIORITY),
-		new TaskItem("P8", "CC: make it shine", 3, HOLIDAY),
-		new TaskItem("P8", "BB: make it so", 2, TASK_UNDEFINED),
-		new TaskItem("P8", "AA: make it so so", 1, HIGH_RISK),
-		new TaskItem("P9", "EE: make it snow", 5, MEDIUM_PRIORITY),
-		new TaskItem("P9", "DD: make it hail", 4, LOW_PRIORITY),
-		new TaskItem("P9", "CC: make it shine", 3, HOLIDAY),
-		new TaskItem("P9", "BB: make it so", 2, TASK_UNDEFINED),
-		new TaskItem("P9", "AA: make it so so", 1, HIGH_RISK),
-		new TaskItem("P9", "GG: make it rock", 7, TASK_DONE),
-		new TaskItem("P10", "EE: make it snow", 5, MEDIUM_PRIORITY),
-		new TaskItem("P10", "DD: make it hail", 4, LOW_PRIORITY),
-		new TaskItem("P10", "CC: make it shine", 3, HOLIDAY),
-		new TaskItem("P10", "BB: make it so", 2, TASK_UNDEFINED),
-		new TaskItem("P10", "AA: make it so so", 1, HIGH_RISK),
-		new TaskItem("P10", "AA: make it rock", 1, TASK_DONE),
-		new TaskItem("P10", "FF: make it hail", 4, LOW_PRIORITY),
-		new TaskItem("P11", "BB: make it rain", 2, HIGH_PRIORITY),
-		new TaskItem("P11", "CC: make it snow", 3, MEDIUM_PRIORITY),
-		new TaskItem("P11", "DD: make it hail", 4, LOW_PRIORITY),
-		new TaskItem("P11", "EE: make it shine", 5, HOLIDAY),
-		new TaskItem("P11", "FF: make it so", 6, TASK_UNDEFINED),
-		new TaskItem("P11", "GG: make it so so", 7, HIGH_RISK),
-		new TaskItem("P12", "GG: make it rock", 7, TASK_DONE),
-		new TaskItem("P12", "FF: make it rain", 6, HIGH_PRIORITY),
-		new TaskItem("P12", "EE: make it snow", 5, MEDIUM_PRIORITY),
-		new TaskItem("P12", "DD: make it hail", 4, LOW_PRIORITY),
-		new TaskItem("P12", "CC: make it shine", 3, HOLIDAY),
-		new TaskItem("P12", "BB: make it so", 2, TASK_UNDEFINED),
-		new TaskItem("P12", "AA: make it so so", 1, HIGH_RISK),
-		new TaskItem("P13", "GG: make it rock", 7, TASK_DONE),
-		new TaskItem("P13", "FF: make it rain", 6, HIGH_PRIORITY),
-		new TaskItem("P13", "EE: make it snow", 5, MEDIUM_PRIORITY),
-		new TaskItem("P13", "DD: make it hail", 4, LOW_PRIORITY),
-		new TaskItem("P13", "CC: make it shine", 3, HOLIDAY),
-		new TaskItem("P13", "BB: make it so", 2, TASK_UNDEFINED),
-		new TaskItem("P13", "AA: make it so so", 1, HIGH_RISK),
-		new TaskItem("P14", "GG: make it rock", 7, TASK_DONE),
-		new TaskItem("P14", "FF: make it rain", 6, HIGH_PRIORITY),
-		new TaskItem("P14", "EE: make it snow", 5, MEDIUM_PRIORITY),
-		new TaskItem("P14", "DD: make it hail", 4, LOW_PRIORITY),
-		new TaskItem("P14", "CC: make it shine", 3, HOLIDAY),
-		new TaskItem("P14", "BB: make it so", 2, TASK_UNDEFINED),
-		new TaskItem("P14", "AA: make it so so", 1, HIGH_RISK),
-		new TaskItem("P15", "GG: make it rock", 7, TASK_DONE),
-		new TaskItem("P15", "FF: make it rain", 6, HIGH_PRIORITY),
-		new TaskItem("P15", "EE: make it snow", 5, MEDIUM_PRIORITY),
-		new TaskItem("P15", "DD: make it hail", 4, LOW_PRIORITY),
-		new TaskItem("P15", "CC: make it shine", 3, HOLIDAY),
-		new TaskItem("P15", "BB: make it so", 2, TASK_UNDEFINED),
-		new TaskItem("P15", "AA: make it so so", 1, HIGH_RISK),
-		new TaskItem("P16", "GG: make it rock", 7, TASK_DONE),
-		new TaskItem("P16", "FF: make it rain", 6, HIGH_PRIORITY),
-		new TaskItem("P16", "EE: make it snow", 5, MEDIUM_PRIORITY),
-		new TaskItem("P16", "DD: make it hail", 4, LOW_PRIORITY),
-		new TaskItem("P16", "CC: make it shine", 3, HOLIDAY),
-		new TaskItem("P16", "BB: make it so", 2, TASK_UNDEFINED),
-		new TaskItem("P16", "AA: make it so so", 1, HIGH_RISK),
-		new TaskItem("P17", "GG: make it rock", 7, TASK_DONE),
-		new TaskItem("P17", "FF: make it rain", 6, HIGH_PRIORITY),
-		new TaskItem("P17", "EE: make it snow", 5, MEDIUM_PRIORITY),
-		new TaskItem("P17", "DD: make it hail", 4, LOW_PRIORITY),
-		new TaskItem("P17", "CC: make it shine", 3, HOLIDAY),
-		new TaskItem("P17", "BB: make it so", 2, TASK_UNDEFINED),
-		new TaskItem("P17", "AA: make it so so", 1, HIGH_RISK),
-		new TaskItem("P18", "GG: make it rock", 7, TASK_DONE),
-		new TaskItem("P18", "FF: make it rain", 6, HIGH_PRIORITY),
-		new TaskItem("P18", "EE: make it snow", 5, MEDIUM_PRIORITY),
-		new TaskItem("P18", "DD: make it hail", 4, LOW_PRIORITY),
-		new TaskItem("P18", "CC: make it shine", 3, HOLIDAY),
-		new TaskItem("P18", "BB: make it so", 2, TASK_UNDEFINED),
-		new TaskItem("P18", "AA: make it so so", 1, HIGH_RISK),
-		new TaskItem("P19", "GG: make it rock", 7, TASK_DONE),
-		new TaskItem("P19", "FF: make it rain", 6, HIGH_PRIORITY),
-		new TaskItem("P19", "EE: make it snow", 5, MEDIUM_PRIORITY),
-		new TaskItem("P19", "DD: make it hail", 4, LOW_PRIORITY),
-		new TaskItem("P19", "CC: make it shine", 3, HOLIDAY),
-		new TaskItem("P19", "BB: make it so", 2, TASK_UNDEFINED),
-		new TaskItem("P19", "AA: make it so so", 1, HIGH_RISK),
-		new TaskItem("P20", "GG: make it rock", 7, TASK_DONE),
-		new TaskItem("P20", "FF: make it rain", 6, HIGH_PRIORITY),
-		new TaskItem("P20", "EE: make it snow", 5, MEDIUM_PRIORITY),
-		new TaskItem("P20", "DD: make it hail", 4, LOW_PRIORITY),
-		new TaskItem("P20", "CC: make it shine", 3, HOLIDAY),
-		new TaskItem("P20", "BB: make it so", 2, TASK_UNDEFINED),
-		new TaskItem("P20", "AA: make it so so", 1, HIGH_RISK),
-		new TaskItem("P21", "GG: make it rock", 7, TASK_DONE),
-		new TaskItem("P21", "FF: make it rain", 6, HIGH_PRIORITY),
-		new TaskItem("P21", "EE: make it snow", 5, MEDIUM_PRIORITY),
-		new TaskItem("P21", "DD: make it hail", 4, LOW_PRIORITY),
-		new TaskItem("P21", "CC: make it shine", 3, HOLIDAY),
-		new TaskItem("P21", "BB: make it so", 2, TASK_UNDEFINED),
-		new TaskItem("P21", "AA: make it so so", 1, HIGH_RISK),
+		new TaskItem("P1", "AA: make it short", 4, LOW_PRIORITY),
+		new TaskItem("P1", "AA: make it medium", 8, LOW_PRIORITY),
+		new TaskItem("P1", "AA: make it long", 12, LOW_PRIORITY),
+		new TaskItem("P2", "BB: make it short", 4, LOW_PRIORITY),
+		new TaskItem("P2", "BB: make it medium", 8, LOW_PRIORITY),
+		new TaskItem("P2", "BB: make it long", 12, LOW_PRIORITY),
+		new TaskItem("P3", "CC: make it short", 4, LOW_PRIORITY),
+		new TaskItem("P3", "CC: make it medium", 8, LOW_PRIORITY),
+		new TaskItem("P3", "CC: make it long", 12, LOW_PRIORITY),
 	];
 	//////////////////////////////////////////////////////////////////////////
 	//
@@ -1393,34 +1226,10 @@ function fuzzyInit()
 	// START OF RESOURCE GROUPS
 	//
 	//////////////////////////////////////////////////////////////////////////
-	s_globalData["fuzzy.selectedNames_n"] = [
+	s_globalData["fuzzy.selectedNames_w"] = [
 		"P1", 
 		"P2", 
 		"P3", 
-		"P4", 
-		"P5",
-		"P6", 
-	];
-	s_globalData["fuzzy.selectedNames_r"] = [
-		"P7", 
-		"P8", 
-		"P9", 
-		"P10",
-		"P11", 
-	];
-	s_globalData["fuzzy.selectedNames_t"] = [
-		"P12", 
-		"P13", 
-		"P14", 
-		"P15",
-		"P16", 
-	];
-	s_globalData["fuzzy.selectedNames_c"] = [
-		"P17", 
-		"P18", 
-		"P19", 
-		"P20", 
-		"P21",
 	];
 	//////////////////////////////////////////////////////////////////////////
 	//
@@ -1510,8 +1319,8 @@ function makeFuzzyFelts(planStartDate, names, sortedTasks)
 	var mediumCanvas = document.getElementById("canvas_medium");
 	var longCanvas = document.getElementById("canvas_long");
 
-	const cellWidth = 250;
-	const cellHeight = 120;
+	const cellWidth = 60;
+	const cellHeight = 200;
 	const nameX = 0;
 	const weekX = nameX + 120;
 	const weekY = cellHeight;
@@ -1521,6 +1330,9 @@ function makeFuzzyFelts(planStartDate, names, sortedTasks)
 	var drawShort = s_globalData["fuzzy.drawShort"];
 	var drawMedium = s_globalData["fuzzy.drawMedium"];
 	var drawLong = s_globalData["fuzzy.drawLong"];
+
+	drawMedium = false;
+	drawLong = false;
 
 	var shortElements = [];
 	var mediumElements = [];
@@ -1546,7 +1358,7 @@ function makeFuzzyFelts(planStartDate, names, sortedTasks)
 
 	var dateStart = planStartDate;
 
-	var shortNumWeeks = 4;
+	var shortNumWeeks = 24;
 	const shortDateStart = planStartDate;
 
 	var showSelectedDates = s_globalData["fuzzy.showSelectedDates"];

@@ -1,10 +1,11 @@
 High
 * display debug keys help
 * put title in canvas not part of HTML page
-* fix bug with length being wrong for sub-week tasks sometimes
+* text wrap function - break on characters if a line is too long
+* fix selection and make it work how I want e.g. j when just showing the short term view
+* a way to output per month version
 
 Medium
-* text wrap function - break on characters if a line is too long
 * list of elements to draw should be EVERYTHING not just rectangles
 * interactivity support: make list of elements to draw: legend+grid
 * interactivity support: draw list of elements in render function
