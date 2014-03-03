@@ -478,6 +478,40 @@ function drawFuzzyFelt(canvasName, elements)
 	}
 }
 
+function GetWeekPositionX(monthX, w, monthWidth)
+{
+	var x = monthX;
+	const maxShort = 4;
+	const maxMedium = 8;
+	const maxLong = 12;
+	var duration = w;
+	var monthWidthShort = monthWidth;
+	var monthWidthMedium = monthWidthShort * (4.0/8.0);
+	var monthWidthLong = monthWidthMedium * (6.0/12.0);
+
+	var numShort = duration;
+	if (numShort > maxShort)
+	{
+		numShort = maxShort;
+	}
+	duration -= numShort;
+	var numMedium = duration;
+	if (numMedium > maxMedium)
+	{
+		numMedium = maxMedium;
+	}
+	duration -= numMedium;
+	var numLong = duration;
+	if (numLong > maxLong)
+	{
+		numLong = maxLong;
+	}
+	x += numShort * monthWidthShort;
+	x += numMedium * monthWidthMedium;
+	x += numLong * monthWidthLong;
+	return x;
+}
+
 function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateStart, numWeeks)
 {
 	var elements = [];
@@ -570,7 +604,7 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 		}
 		if (w == numWeeks-1)
 		{
-			var x0 = monthX + w * monthWidth;
+			var x0 = GetWeekPositionX(monthX, w, monthWidth);
 			drawMonth = true;
 		}
 		if (drawMonth == true)
@@ -596,7 +630,7 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 			var monthBGcolour = pastelColours[pastelColourIndex];
 			oldMonth = month;
 
-			var x0 = monthX + w * monthWidth;
+			var x0 = GetWeekPositionX(monthX, w, monthWidth);
 			var y0 = monthY;
 			monthX0 = x0;
 			monthY0 = y0;
@@ -604,7 +638,7 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 			monthStartDate = weekDateString;
 		}
 
-		x0 = weekX + w * weekWidth;
+		x0 = GetWeekPositionX(weekX, w, weekWidth);
 		y0 = weekY;
 		if (drawWeek == true)
 		{
@@ -647,7 +681,7 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 	drawGrid(ctx, cellWidth, cellHeight, numRows+1, numCols, nameX, weekX);
 	if (shortTermPlan)
 	{
-		drawLegendShort(ctx, legendX, legendY, legendWidth, legendHeight);
+		//drawLegendShort(ctx, legendX, legendY, legendWidth, legendHeight);
 	}
 	else
 	{
@@ -659,6 +693,7 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 	{
 		var x0 = weekX;
 		var y = nameY + n*cellHeight + (10/2);
+		var totalDuration = 0;
 		name = names[n];
 		var numWeeksForPerson = 0;
 		for (var i = 0; i < tasks.length; i++)
@@ -698,7 +733,10 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 						}
 					}
 
-					var w = duration * weekWidth - 10;
+					totalDuration += duration;
+					var xNew = GetWeekPositionX(weekX, totalDuration, cellWidth);
+					//var w = duration * weekWidth - 10;
+					var w = xNew - x0 - 10;
 					var h = elementHeight;
 					var x = x0;
 					x += (10/2);
@@ -707,7 +745,8 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 					fuzzyFeltElement = new FuzzyFeltElement(text, x, y, w, h, boxColour, TYPE_FUZZY);
 					elements.push(fuzzyFeltElement);
 
-					x0 += duration * cellWidth;
+					x0 = xNew;
+					//x0 += duration * cellWidth;
 				}
 			}
 			if (numWeeksForPerson >= numWeeks)
@@ -1490,7 +1529,7 @@ function makeFuzzyFelts(planStartDate, names, sortedTasks)
 	var mediumCanvas = document.getElementById("canvas_medium");
 	var longCanvas = document.getElementById("canvas_long");
 
-	const cellWidth = 60;
+	const cellWidth = 100;
 	const cellHeight = 200;
 	const nameX = 0;
 	const weekX = nameX + 120;
