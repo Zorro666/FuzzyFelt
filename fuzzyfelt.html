@@ -565,6 +565,7 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 		var monthBGcolour = pastelColours[pastelColourIndex];
 		var startMonth = false;
 		var drawMonth = false;
+		var x0 = GetWeekPositionX(monthX, w, monthWidth);
 		if (month != oldMonth)
 		{
 			if (oldMonth != '')
@@ -575,12 +576,11 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 		}
 		if (w == numWeeks-1)
 		{
-			var x0 = GetWeekPositionX(monthX, w, monthWidth);
 			drawMonth = true;
 		}
 		if (drawMonth == true)
 		{
-			var width = x0 - monthX0 + monthWidth;
+			var width = x0 - monthX0;
 			var monthElement = new FuzzyFeltElement(oldMonth, monthX0, monthY0, width, monthHeight, monthBGcolour, TYPE_MONTH);
 			monthElement.m_startDate = monthStartDate;
 			monthElement.m_duration = 4;
@@ -601,7 +601,6 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 			var monthBGcolour = pastelColours[pastelColourIndex];
 			oldMonth = month;
 
-			var x0 = GetWeekPositionX(monthX, w, monthWidth);
 			var y0 = monthY;
 			monthX0 = x0;
 			monthY0 = y0;
@@ -1489,12 +1488,12 @@ function fuzzyInit()
 	//
 	//////////////////////////////////////////////////////////////////////////
 	var resourceNames = [
-	"WF Main",
-	"WF 360",
-	"WF West",
-	"WF HD",
-	"CryLive",
-	"HF2",
+	"AA",
+	"BB",
+	"CC",
+	"DD",
+	"EE",
+	"FF",
 	];
 	//////////////////////////////////////////////////////////////////////////
 	//
@@ -1510,10 +1509,10 @@ function fuzzyInit()
 	//
 	//////////////////////////////////////////////////////////////////////////
 	s_globalData["fuzzy.selectedNames_w"] = [
-	"WF Main",
-	"WF 360",
-	"WF West",
-	"WF HD",
+	"AA",
+	"BB",
+	"CC",
+	"DD",
 	];
 	//////////////////////////////////////////////////////////////////////////
 	//
@@ -1545,6 +1544,24 @@ function CreateTasks()
 	//
 	//////////////////////////////////////////////////////////////////////////
 	var resourceTasks = [
+	new TaskItem("AA", "Short Task; Short2; Short3", 4, LOW_RISK),
+	new TaskItem("AA", "Medium Task; Medium3, Medium3.1; Medium4", 8, LOW_RISK),
+	new TaskItem("AA", "Long Task; Long2; Long3", 12, LOW_RISK),
+	new TaskItem("BB", "Short Task; Short2; Short3", 4, LOW_RISK),
+	new TaskItem("BB", "Medium Task; Medium3, Medium3.1; Medium4", 8, LOW_RISK),
+	new TaskItem("BB", "Long Task; Long2; Long3", 12, LOW_RISK),
+	new TaskItem("CC", "Short Task; Short2; Short3", 4, LOW_RISK),
+	new TaskItem("CC", "Medium Task; Medium3, Medium3.1; Medium4", 8, LOW_RISK),
+	new TaskItem("CC", "Long Task; Long2; Long3", 12, LOW_RISK),
+	new TaskItem("DD", "Short Task; Short2; Short3", 4, LOW_RISK),
+	new TaskItem("DD", "Medium Task; Medium3, Medium3.1; Medium4", 8, LOW_RISK),
+	new TaskItem("DD", "Long Task; Long2; Long3", 12, LOW_RISK),
+	new TaskItem("EE", "Short Task; Short2; Short3", 4, LOW_RISK),
+	new TaskItem("EE", "Medium Task; Medium3, Medium3.1; Medium4", 8, LOW_RISK),
+	new TaskItem("EE", "Long Task; Long2; Long3", 12, LOW_RISK),
+	new TaskItem("FF", "Short Task; Short2; Short3", 4, LOW_RISK),
+	new TaskItem("FF", "Medium Task; Medium3, Medium3.1; Medium4", 8, LOW_RISK),
+	new TaskItem("FF", "Long Task; Long2; Long3", 12, LOW_RISK),
 
 	];
 	//////////////////////////////////////////////////////////////////////////
