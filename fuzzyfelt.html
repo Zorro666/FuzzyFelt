@@ -240,27 +240,19 @@ function createRoadMapTasks(sortedTasks, startDate)
 		var ownerDuration = currentTask.m_duration;
 		var ownerEndDate = 4; // ownerEndDates[owner];
 		var outputTask = true;
-		var addTask = false;
-		myLog(owner + "::" + title + " " + duration + " " + ownerDuration);
-		if (ownerDuration == 0)
-		{
-			myLog("ADD TASK " + title);
-			addTask = true;
-		}
+		//myLog(owner + "::" + title + " " + duration + " " + ownerDuration);
 		if (ownerDuration < ownerEndDate)
 		{
-			addTask = true;
 			outputTask = false;
 		}
-		if (addTask)
-		{
-			ownerDuration += duration;
-			myLog("APPEND " + owner + "::" + title);
-			currentTask.m_title += title;
-			currentTask.m_title += "; ";
-			currentTask.m_duration = ownerDuration;
-			currentTask.m_endDate = task.m_endDate;
-		}
+
+		ownerDuration += duration;
+		//myLog("APPEND " + owner + "::" + title);
+		currentTask.m_title += title;
+		currentTask.m_title += "; ";
+		currentTask.m_duration = ownerDuration;
+		currentTask.m_endDate = task.m_endDate;
+
 		if (ownerDuration >= ownerEndDate)
 		{
 			outputTask = true;
@@ -277,8 +269,8 @@ function createRoadMapTasks(sortedTasks, startDate)
 
 			var roadmapTask = new TaskItemClone(currentTask);
 			roadmapTasks.push(roadmapTask);
-			myLog("JAKE " + roadmapTask.m_owner + "::" + roadmapTask.m_title + " " + roadmapTask.m_duration);
-			myLog("JAKE " + roadmapTask.m_owner + "::" + roadmapTask.m_startDate + " " + roadmapTask.m_endDate);
+			//myLog("JAKE " + roadmapTask.m_owner + "::" + roadmapTask.m_title + " " + roadmapTask.m_duration);
+			//myLog("JAKE " + roadmapTask.m_owner + "::" + roadmapTask.m_startDate + " " + roadmapTask.m_endDate);
 
 			currentTask.m_title = "";
 			currentTask.m_startDate = currentTask.m_endDate;
@@ -302,6 +294,16 @@ function createRoadMapTasks(sortedTasks, startDate)
 			}
 			*/
 		}
+	}
+	for (var owner in ownerCurrentTasks)
+	{
+		var currentTask = ownerCurrentTasks[owner];
+		if (currentTask.m_duration > 0)
+		{
+			var roadmapTask = new TaskItemClone(currentTask);
+			roadmapTasks.push(roadmapTask);
+		}
+		myLog("JAKE " + owner);
 	}
 	/*
 	for (var i = 0; i < roadmapTasks.length; i++)
