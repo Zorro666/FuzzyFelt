@@ -221,7 +221,10 @@ function createRoadMapTasks(sortedTasks, startDate)
 		var owner = task.m_owner;
 		if (typeof(ownerCurrentTasks[owner]) == "undefined")
 		{
-			ownerCurrentTasks[owner] = task;
+			var currentTask = new TaskItemClone(task);
+			currentTask.m_title = "";
+			currentTask.m_duration = 0;
+			ownerCurrentTasks[owner] = currentTask;
 		}
 	}
 	for (var i = 0; i < sortedTasks.length; i++)
@@ -264,13 +267,28 @@ function createRoadMapTasks(sortedTasks, startDate)
 		}
 		if (outputTask)
 		{
+			ownerDuration -= ownerEndDate;
+
+			if (ownerDuration > 0)
+			{
+				currentTask.m_duration = ownerEndDate;
+				currentTask.m_endDate = computeEndDateTask(currentTask);
+			}
+
 			var roadmapTask = new TaskItemClone(currentTask);
 			roadmapTasks.push(roadmapTask);
 			myLog("JAKE " + roadmapTask.m_owner + "::" + roadmapTask.m_title + " " + roadmapTask.m_duration);
 			myLog("JAKE " + roadmapTask.m_owner + "::" + roadmapTask.m_startDate + " " + roadmapTask.m_endDate);
+
 			currentTask.m_title = "";
 			currentTask.m_startDate = currentTask.m_endDate;
-			currentTask.m_duration = 0;
+			currentTask.m_duration = ownerDuration;
+			if (ownerDuration > 0)
+			{
+				currentTask.m_title = title;
+				currentTask.m_title += "; ";
+			}
+
 			ownerCurrentTasks[owner] = currentTask;
 
 			/*
@@ -296,6 +314,23 @@ function createRoadMapTasks(sortedTasks, startDate)
 	return roadmapTasks;
 }
 
+function computeEndDate(startDate, duration)
+{
+		var startDateDay = startDate.getDate();
+		var startDateHours = startDate.getHours();
+		var endDateDay = startDateDay + 7.0 * duration;
+		var deltaHours = (endDateDay - Math.floor(endDateDay))*24
+		var endDateHours = startDateHours + deltaHours;
+		var endDate = new Date(startDate.getFullYear(), startDate.getMonth(), Math.floor(endDateDay), endDateHours);
+		return endDate;
+}
+
+function computeEndDateTask(task)
+{
+	var endDate = computeEndDate(task.m_startDate, task.m_duration);
+	return endDate;
+}
+
 function makeSortedTasks(tasks, startDate)
 {
 	var sortedTasks = [];
@@ -308,7 +343,7 @@ function makeSortedTasks(tasks, startDate)
 	var ownerCurrentEnds = new Object();
 	for (var i = 0; i < tasks.length; i++)
 	{
-		var task = tasks[i];
+		var task = new TaskItemClone(tasks[i]);
 		var owner = task.m_owner;
 		var duration = task.m_duration;
 
@@ -317,14 +352,7 @@ function makeSortedTasks(tasks, startDate)
 			ownerCurrentEnds[owner] = planStartDate;
 		}
 		var startDate = ownerCurrentEnds[owner];
-
-		var startDateDay = startDate.getDate();
-		var startDateHours = startDate.getHours();
-		var endDateDay = startDateDay + 7.0 * duration;
-		var deltaHours = (endDateDay - Math.floor(endDateDay))*24
-		var endDateHours = startDateHours + deltaHours;
-		//myLog(i+" startDateDay:"+startDateDay+" endDateDay:"+endDateDay+" deltaHours:"+deltaHours);
-		var endDate = new Date(startDate.getFullYear(), startDate.getMonth(), Math.floor(endDateDay), endDateHours);
+		var endDate = computeEndDate(startDate, duration);
 		ownerCurrentEnds[owner] = endDate;
 		//myLog(i+" endDate:"+endDate);
 
@@ -1046,6 +1074,13 @@ function keyUp(evt)
 			doFuzzyFelts();
 			break;
 		}
+		case 82: // 'r'
+		{
+			infoMessage("Pressed 'r'");
+			s_globalData["fuzzy.drawRoadmap"] ^= true;
+			doFuzzyFelts();
+			break;
+		}
 		case 83: // 's'
 		{
 			infoMessage("Pressed 's'");
@@ -1360,8 +1395,14 @@ function doFuzzyFelts()
 		names = resourceNames;
 	}
 
-	tasks = sortedTasks;
-	tasks = roadmapTasks;
+	if (s_globalData["fuzzy.drawRoadmap"])
+	{
+		tasks = roadmapTasks;
+	}
+	else
+	{
+		tasks = sortedTasks;
+	}
 
 	var fullPlanStartDate = s_globalData["fuzzy.fullPlanStartDate"];
 	var planStartDate = fullPlanStartDate;
@@ -1629,6 +1670,7 @@ function fuzzyInit()
 	s_globalData["fuzzy.sortedTasks"] = sortedTasks;
 	s_globalData["fuzzy.roadmapTasks"] = roadmapTasks;
 	s_globalData["fuzzy.fullPlanStartDate"] = bigplanStartDate;
+	s_globalData["fuzzy.drawRoadmap"] = true;
 
 	infoMessage("Full1");
 	drawFullView();
