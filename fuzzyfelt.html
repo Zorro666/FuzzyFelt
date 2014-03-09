@@ -112,6 +112,16 @@ var monthNames = [
 	"December",
 	];
 
+function TaskItemClone(taskItem)
+{
+	this.m_owner = taskItem.m_owner;
+	this.m_title = taskItem.m_title;
+	this.m_duration = taskItem.m_duration;
+	this.m_taskStatus = taskItem.m_taskStatus;
+	this.m_startDate = taskItem.m_startDate;
+	this.m_endDate = taskItem.m_endDate;
+	this.m_parentID = taskItem.m_parentID;
+}
 function TaskItem(owner, title, duration, taskStatus, id)
 {
 	this.m_owner = owner;
@@ -198,6 +208,92 @@ function computeNumWeeksToShow(startDate, numWeeks)
 	var endMonth = dateEnd.getMonth();
 
 	return numWeeks;
+}
+
+function createRoadMapTasks(sortedTasks, startDate)
+{
+	var roadmapTasks = [];
+	var ownerCurrentTasks = new Object();
+
+	for (var i = 0; i < sortedTasks.length; i++)
+	{
+		var task = sortedTasks[i];
+		var owner = task.m_owner;
+		if (typeof(ownerCurrentTasks[owner]) == "undefined")
+		{
+			ownerCurrentTasks[owner] = task;
+		}
+	}
+	for (var i = 0; i < sortedTasks.length; i++)
+	{
+		var task = sortedTasks[i];
+		var title = task.m_title;
+		var owner = task.m_owner;
+		var duration = task.m_duration;
+		var currentTask = ownerCurrentTasks[owner];
+
+		var startDate = task.m_startDate;
+		var endDate = task.m_endDate;
+		var ownerDuration = currentTask.m_duration;
+		var ownerEndDate = 4; // ownerEndDates[owner];
+		var outputTask = true;
+		var addTask = false;
+		myLog(owner + "::" + title + " " + duration + " " + ownerDuration);
+		if (ownerDuration == 0)
+		{
+			myLog("ADD TASK " + title);
+			addTask = true;
+		}
+		if (ownerDuration < ownerEndDate)
+		{
+			addTask = true;
+			outputTask = false;
+		}
+		if (addTask)
+		{
+			ownerDuration += duration;
+			myLog("APPEND " + owner + "::" + title);
+			currentTask.m_title += title;
+			currentTask.m_title += "; ";
+			currentTask.m_duration = ownerDuration;
+			currentTask.m_endDate = task.m_endDate;
+		}
+		if (ownerDuration >= ownerEndDate)
+		{
+			outputTask = true;
+		}
+		if (outputTask)
+		{
+			var roadmapTask = new TaskItemClone(currentTask);
+			roadmapTasks.push(roadmapTask);
+			myLog("JAKE " + roadmapTask.m_owner + "::" + roadmapTask.m_title + " " + roadmapTask.m_duration);
+			myLog("JAKE " + roadmapTask.m_owner + "::" + roadmapTask.m_startDate + " " + roadmapTask.m_endDate);
+			currentTask.m_title = "";
+			currentTask.m_startDate = currentTask.m_endDate;
+			currentTask.m_duration = 0;
+			ownerCurrentTasks[owner] = currentTask;
+
+			/*
+			if (ownerEndDates[owner] == 4)
+			{
+				ownerEndDates[owner] = 8;
+			}
+			else if (ownerEndDates[owner] == 8)
+			{
+				ownerEndDates[owner] = 12;
+			}
+			*/
+		}
+	}
+	/*
+	for (var i = 0; i < roadmapTasks.length; i++)
+	{
+			var roadmapTask = roadmapTasks[i];
+			myLog("JAKE " + roadmapTask.m_owner + "::" + roadmapTask.m_title + " " + roadmapTask.m_duration);
+			myLog("JAKE " + roadmapTask.m_owner + "::" + roadmapTask.m_startDate + " " + roadmapTask.m_endDate);
+	}
+	*/
+	return roadmapTasks;
 }
 
 function makeSortedTasks(tasks, startDate)
@@ -585,7 +681,7 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 			monthElement.m_startDate = monthStartDate;
 			monthElement.m_duration = 4;
 			elements.push(monthElement);
-			myLog(oldMonth+":"+monthX0+":"+monthY0);
+			//myLog(oldMonth+":"+monthX0+":"+monthY0);
 		}
 		if (startMonth == true)
 		{
@@ -687,11 +783,13 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 						if (duration <= 0)
 						{
 							alert("Illegal duration3: '"+text+"' "+duration+ " taskTime:"+task.m_duration+" weekDelta:"+weekDelta);
+							myLog("Illegal duration3: '"+text+"' "+duration+ " taskTime:"+task.m_duration+" weekDelta:"+weekDelta);
 						}
 					}
 					if (duration <= 0)
 					{
 						alert("Illegal duration1: '"+text+"' "+duration+ " taskTime:"+task.m_duration);
+						myLog("Illegal duration1: '"+text+"' "+duration+ " taskTime:"+task.m_duration);
 					}
 					numWeeksForPerson += duration;
 					if (numWeeksForPerson > numWeeks)
@@ -705,7 +803,6 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 
 					totalDuration += duration;
 					var xNew = GetWeekPositionX(weekX, totalDuration, cellWidth);
-					//var w = duration * weekWidth - 10;
 					var w = xNew - x0 - 10;
 					var h = elementHeight;
 					var x = x0;
@@ -716,7 +813,6 @@ function makeFuzzyFelt(canvas, fuzzyData, names, tasks, shortTermPlan, weekDateS
 					elements.push(fuzzyFeltElement);
 
 					x0 = xNew;
-					//x0 += duration * cellWidth;
 				}
 			}
 			if (numWeeksForPerson >= numWeeks)
@@ -1237,6 +1333,7 @@ function doFuzzyFelts()
 {
 	var resourceNames = s_globalData["fuzzy.resourceNames"];
 	var sortedTasks = s_globalData["fuzzy.sortedTasks"];
+	var roadmapTasks = s_globalData["fuzzy.roadmapTasks"];
 
 	var selectedNames = s_globalData["fuzzy.selectedNames"];
 
@@ -1264,6 +1361,7 @@ function doFuzzyFelts()
 	}
 
 	tasks = sortedTasks;
+	tasks = roadmapTasks;
 
 	var fullPlanStartDate = s_globalData["fuzzy.fullPlanStartDate"];
 	var planStartDate = fullPlanStartDate;
@@ -1522,12 +1620,14 @@ function fuzzyInit()
 
 	const bigplanStartDate = "01/02/2014";
 	var sortedTasks = makeSortedTasks(resourceTasks, bigplanStartDate);
+	var roadmapTasks = createRoadMapTasks(sortedTasks);
 
 	var selectedNames= [];
 
 	s_globalData["fuzzy.resourceNames"] = resourceNames;
 	s_globalData["fuzzy.resourceTasks"] = resourceTasks;
 	s_globalData["fuzzy.sortedTasks"] = sortedTasks;
+	s_globalData["fuzzy.roadmapTasks"] = roadmapTasks;
 	s_globalData["fuzzy.fullPlanStartDate"] = bigplanStartDate;
 
 	infoMessage("Full1");
@@ -1544,8 +1644,12 @@ function CreateTasks()
 	//
 	//////////////////////////////////////////////////////////////////////////
 	var resourceTasks = [
-	new TaskItem("AA", "Short Task; Short2; Short3", 4, LOW_RISK),
-	new TaskItem("AA", "Medium Task; Medium3, Medium3.1; Medium4", 8, LOW_RISK),
+	new TaskItem("AA", "Short Task", 1, LOW_RISK),
+	new TaskItem("AA", "Short2", 1, LOW_RISK),
+	new TaskItem("AA", "Short3", 1, LOW_RISK),
+	new TaskItem("AA", "Medium Task", 2, LOW_RISK),
+	new TaskItem("AA", "Medium3, Medium3.1", 2, LOW_RISK),
+	new TaskItem("AA", "Medium4", 2, LOW_RISK),
 	new TaskItem("AA", "Long Task; Long2; Long3", 12, LOW_RISK),
 	new TaskItem("BB", "Short Task; Short2; Short3", 4, LOW_RISK),
 	new TaskItem("BB", "Medium Task; Medium3, Medium3.1; Medium4", 8, LOW_RISK),
